@@ -87,7 +87,9 @@ enum OF_TYPE
     OF_OWNoDropCarriedItem          = 0x0400000,     // When overweighted, don't drop items on ground when moving them (or using BOUNCE) and checking if you can carry them.
     OF_AllowContainerInsideContainer = 0x0800000,    //Allow containers inside other containers even if they are heavier than the container being inserted into.
     OF_VendorStockLimit              = 0x01000000,   // Limits how much of an item a vendor can buy using the value set in the TEMPLATE. Format: BUY=ID,AMOUNT
-    OF_EnableGuildAlignNotoriety     = 0x02000000    // If enabled, guilds with the same alignment will see each other as enemy or ally.
+    OF_EnableGuildAlignNotoriety     = 0x02000000,    // If enabled, guilds with the same alignment will see each other as enemy or ally.
+    OF_PetBehaviorOwnerNeutral       = 0x04000000, // Should my pets always appear natural to me?
+    OF_NPCMovementOldStyle           = 0x06000000 // Required setting to make NPCs run like in the old version.
 };
 
 /**
@@ -303,6 +305,7 @@ public:
 	int  m_iWordsOfPowerFont;   // Font used for Words Of Power.
 	bool m_fWordsOfPowerPlayer; // Words of Power for players.
 	bool m_fWordsOfPowerStaff;  // Words of Power for staff.
+    TALKMODE_TYPE m_iWordsOfPowerTalkMode; // Walk mode used for Words Of Power.
 	bool m_fEquippedCast;       // Allow casting while equipped.
     bool m_fManaLossAbort;      // Lose mana when spell casting aborted.
     bool m_fManaLossFail;       // Lose mana when spell casting failed.
@@ -433,17 +436,60 @@ public:
 	CSString	m_sDumpAccPackets;
 #endif
 
-	CSString            m_sEventsPet;			// Key to add Events to all pets.
-	CResourceRefArray   m_pEventsPetLink;		// EventsPet.
+    
+    //////////////////////
+    // Npcs
+    //////////////////////
+    // EVENTSNPC
+    CSString m_sEventsNPC;              // Key to add Events to all npc.
+    CResourceRefArray m_pEventsNPCLink; // m_sEventsNPC.
 
-	CSString            m_sEventsPlayer;		// Key to add Events to all players.
-	CResourceRefArray   m_pEventsPlayerLink;	// EventsPlayer.
+    // EVENTSNPCANIMAL
+    CSString m_sEventsNPCAnimal;              // Key to add Events to all animals
+    CResourceRefArray m_pEventsNPCAnimalLink; // m_sEventsNPCAnimal.
 
-	CSString            m_sEventsRegion;		// Key to add Events to all regions.
-	CResourceRefArray   m_pEventsRegionLink;	// EventsRegion.
+    // EVENTSNPCMONSTER
+    CSString m_sEventsNPCMonster;              // Key to add Events to all monsters (brain_monster, brain_dragon, brain_berserk).
+    CResourceRefArray m_pEventsNPCMonsterLink; // m_sEventsNPCMonster.
 
-	CSString            m_sEventsItem;			// Key to add Events to all items.
-	CResourceRefArray   m_iEventsItemLink;		// EventsItem.
+    // EVENTSNPCMOUNTABLE
+    CSString m_sEventsNPCMountable;              // Key to add Events to all mountables (brain_animal).
+    CResourceRefArray m_pEventsNPCMountableLink; // EventsNPCMountable.
+
+    // EVENTSNPCSHOP
+    CSString m_sEventsNPCShop;                  // Key to add Events to all shopkeepers (brain_vendor).
+    CResourceRefArray m_pEventsNPCShopLink;     // EventsNPCShop.
+
+     //////////////////////
+    // Chars
+    //////////////////////
+    // EVENTSCHAR
+    CSString m_sEventsChar;              // Key to add Events to all players and staff.
+    CResourceRefArray m_pEventsCharLink; // EventsChar.
+
+    // EVENTSCHARSTAFF
+    CSString m_sEventsCharStaff;              // Key to add Events to all players.
+    CResourceRefArray m_pEventsCharStaffLink; // EventsCharStaff.
+
+    // EVENTSCHARPLAYER
+    CSString m_sEventsCharPlayer;               // Key to add Events to all players.
+    CResourceRefArray m_pEventsCharPlayerLink;  // EventsCharPlayer.
+
+    //////////////////////
+    // Regions
+    //////////////////////
+    CSString m_sEventsRegion;                   // Key to add Events to all regions.
+    CResourceRefArray m_pEventsRegionLink;      // EventsRegion.
+
+    //////////////////////
+    // Items
+    //////////////////////
+    CSString m_sEventsItem;              // Key to add Events to all items.
+    CResourceRefArray m_iEventsItemLink; // EventsItem.
+
+    // Weapon
+    CSString m_sEventsItemWeapon;              // Key to add Events to all items.
+    CResourceRefArray m_iEventsItemWeaponLink; //EventsItemWeapon.
 
 	// Third Party Tools
 	CSString m_sStripPath;	// Strip Path for TNG and Axis.

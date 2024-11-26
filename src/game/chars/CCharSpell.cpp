@@ -1982,13 +1982,23 @@ bool CChar::Spell_Equip_OnTick( CItem * pItem )
         iDmgType = (DAMAGE_TYPE)(ResGetIndex((dword)Args.m_VarsLocal.GetKeyNum("DamageType")));
 		if (iDmgType > 0 && iEffect > 0) // This is necessary if we have a spell that is harmful but does no damage periodically.
 		{
-			OnTakeDamage(iEffect, pItem->m_uidLink.CharFind(), iDmgType,
-				(iDmgType & (DAMAGE_HIT_BLUNT | DAMAGE_HIT_PIERCE | DAMAGE_HIT_SLASH)) ? 100 : 0,
-				(iDmgType & DAMAGE_FIRE) ? 100 : 0,
-				(iDmgType & DAMAGE_COLD) ? 100 : 0,
-				(iDmgType & DAMAGE_POISON) ? 100 : 0,
-				(iDmgType & DAMAGE_ENERGY) ? 100 : 0,
-				spell);
+            //
+            CChar *pLinkedChar = pItem->m_uidLink.CharFind();
+            if (pLinkedChar == nullptr)
+            {
+                // pLinkedChar = this; //  If it is not alive or deleted, should it be like it is self-damaging? Note: Under the OnTakeDamage()
+                Skill_Fail(); // If the memory does not belong to a creature, or if the creature is dead or deleted, skills do not take effect on damage taken.
+            }
+
+            OnTakeDamage(iEffect,
+                pLinkedChar,
+                iDmgType,
+                (iDmgType & (DAMAGE_HIT_BLUNT | DAMAGE_HIT_PIERCE | DAMAGE_HIT_SLASH)) ? 100 : 0,
+                (iDmgType & DAMAGE_FIRE) ? 100 : 0,
+                (iDmgType & DAMAGE_COLD) ? 100 : 0,
+                (iDmgType & DAMAGE_POISON) ? 100 : 0,
+                (iDmgType & DAMAGE_ENERGY) ? 100 : 0,
+                spell);
 		}
 	}
 	else if (pSpellDef->IsSpellType(SPELLFLAG_HEAL))
@@ -3463,6 +3473,11 @@ int CChar::Spell_CastStart()
 	Args.m_VarsLocal.SetNum("WOP", fWOP);
 	int64 WOPFont = g_Cfg.m_iWordsOfPowerFont;
 	int64 WOPColor;
+    TALKMODE_TYPE WOPTalkMode = g_Cfg.m_iWordsOfPowerTalkMode ? g_Cfg.m_iWordsOfPowerTalkMode : TALKMODE_SPELL;
+
+    if (WOPTalkMode < TALKMODE_SAY || WOPTalkMode >= TALKMODE_COMMAND)
+        WOPTalkMode = TALKMODE_SPELL;
+
 	if (g_Cfg.m_iWordsOfPowerColor > 0)
 		WOPColor = g_Cfg.m_iWordsOfPowerColor;
 	else if (m_SpeechHueOverride)
@@ -3471,8 +3486,10 @@ int CChar::Spell_CastStart()
 		WOPColor = m_pPlayer->m_SpeechHue;
     else
         WOPColor = HUE_TEXT_DEF;
+
 	Args.m_VarsLocal.SetNum("WOPColor", WOPColor, true);
 	Args.m_VarsLocal.SetNum("WOPFont", WOPFont, true);
+    Args.m_VarsLocal.SetNum("WOPTalkMode", WOPTalkMode, true);
 
 	if ( IsTrigUsed(TRIGGER_SPELLCAST) )
 	{
@@ -3517,11 +3534,12 @@ int CChar::Spell_CastStart()
 	{
 		WOPColor = Args.m_VarsLocal.GetKeyNum("WOPColor");
 		WOPFont = Args.m_VarsLocal.GetKeyNum("WOPFont");
+        WOPTalkMode = (TALKMODE_TYPE)Args.m_VarsLocal.GetKeyNum("WOPTalkMode");
 
 		// Correct talk mode for spells WOP is TALKMODE_SPELL, but sphere doesn't have any delay between spell casts this can allow WOP flood on screen.
 		if ( pSpellDef->m_sRunes[0] == '.' )
 		{
-			Speak((pSpellDef->m_sRunes.GetBuffer()) + 1, (HUE_TYPE)WOPColor, TALKMODE_SPELL, (FONT_TYPE)WOPFont);
+            Speak((pSpellDef->m_sRunes.GetBuffer()) + 1, (HUE_TYPE)WOPColor, (TALKMODE_TYPE)WOPTalkMode, (FONT_TYPE)WOPFont);
 		}
 		else
 		{
@@ -3539,7 +3557,7 @@ int CChar::Spell_CastStart()
 			if ( len > 0 )
 			{
 				pszTemp[len] = 0;
-				Speak(pszTemp, (HUE_TYPE)WOPColor, TALKMODE_SPELL, (FONT_TYPE)WOPFont);
+                Speak(pszTemp, (HUE_TYPE)WOPColor, (TALKMODE_TYPE)WOPTalkMode, (FONT_TYPE)WOPFont);
 			}
 		}
 	}

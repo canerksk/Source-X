@@ -87,6 +87,7 @@ lpctstr const CChar::sm_szTrigName[CTRIG_QTY+1] =	// static
 	"@HitIgnore",			// I'm going to avoid a target (attacker.n.ignore=1) , should I un-ignore him?.
 	"@HitMiss",				// I just missed.
 	"@HitParry",			// I succesfully parried an hit.
+    "@HitReactive",           // Reactive damage trigger
 	"@HitTry",				// I am trying to hit someone. starting swing.
     "@HouseDesignBegin",    // Starting to customize.
     "@HouseDesignCommit",	// I committed a new house design.
@@ -105,6 +106,7 @@ lpctstr const CChar::sm_szTrigName[CTRIG_QTY+1] =	// static
 	"@itemCreate",			//?
 	"@itemDamage",			//?
 	"@itemDCLICK",			// I have dclicked item
+    "@itemDeposit",         // IT_GOLD deposited virtualgold
 	"@itemDestroy",			//+I am nearly destroyed
 	"@itemDropOn_Char",		// I have been dropped on this char
 	"@itemDropOn_Ground",	// I dropped an item on the ground
@@ -526,6 +528,14 @@ void CChar::SetDisconnected(CSector* pNewSector)
     if (IsClientActive())
     {
         GetClientActive()->GetNetState()->markReadClosed();
+    }
+
+    if (m_pNPC && !g_Serv.IsLoading())
+    {
+        if (IsTrigUsed(TRIGGER_LOGOUT))
+        {
+            OnTrigger(CTRIG_LogOut, this, nullptr);
+        }
     }
 
 	if (m_pPlayer)
@@ -3309,7 +3319,26 @@ do_default:
 				else
 					sVal = GetTradeTitle();
 			}
-			break;
+		break;
+
+        case CHC_NOTOTITLE:
+        {
+            lpctstr pTitle = Noto_IsMurderer() ? g_Cfg.GetDefaultMsg(DEFMSG_TITLE_MURDERER) :
+                                                     (IsStatFlag(STATF_CRIMINAL) ? g_Cfg.GetDefaultMsg(DEFMSG_TITLE_CRIMINAL) :
+                                                                                   g_Cfg.GetNotoTitle(Noto_GetLevel(), Char_GetDef()->IsFemale()));
+            tchar *pTemp = Str_GetTemp();
+
+            snprintf(pTemp, Str_TempLength(), "%s%s%s%s",
+                (pTitle[0]) ? (Char_GetDef()->IsFemale() ? g_Cfg.GetDefaultMsg(DEFMSG_TITLE_ARTICLE_FEMALE) : g_Cfg.GetDefaultMsg(DEFMSG_TITLE_ARTICLE_MALE)) : "",
+                pTitle,
+                (pTitle[0]) ? " " : "",
+                Noto_GetFameTitle());
+
+            sVal = pTemp;
+            //sVal = Noto_GetTitle();
+        }
+        break;
+
 		case CHC_EXP:
 			sVal.FormatVal(m_exp);
 			break;
@@ -4035,6 +4064,11 @@ bool CChar::r_LoadVal( CScript & s )
 		case CHC_TITLE:
 			m_sTitle = s.GetArgStr();
 			break;
+
+        case CHC_NOTOTITLE:
+            // READ ONLY FOR NOW
+            break;
+
 		case CHC_EXP:
 			m_exp = s.GetArgUVal();
 			ChangeExperience();			//	auto-update level if applicable

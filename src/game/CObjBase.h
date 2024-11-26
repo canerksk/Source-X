@@ -990,6 +990,7 @@ enum ITRIG_TYPE
     ITRIG_DELOBJ,				// For t_spawn when obj is remove from list
     ITRIG_DELREDCANDLE,
     ITRIG_DELWHITECANDLE,
+    ITRIG_DEPOSIT,              // IT_GOLD dropon bank deposit trigger
 	ITRIG_DESTROY,              //+I am nearly destroyed.
 	ITRIG_DROPON_CHAR,          // I have been dropped on this char.
 	ITRIG_DROPON_GROUND,        // I have been dropped on the ground here.
@@ -1088,6 +1089,7 @@ enum CTRIG_TYPE : short
 	CTRIG_HitIgnore,        // I should ignore this target, just giving a record to scripts.
 	CTRIG_HitMiss,          // I just missed.
 	CTRIG_HitParry,			// I succesfully parried an hit.
+    CTRIG_HitReactive,            // Reactive damage trigger
 	CTRIG_HitTry,           // I am trying to hit someone. starting swing.
     CTRIG_HouseDesignBegin, // Starting to customize.
     CTRIG_HouseDesignCommit, // I committed a new house design
@@ -1106,6 +1108,7 @@ enum CTRIG_TYPE : short
 	CTRIG_itemCreate,           // Created one item.
 	CTRIG_itemDamage,           // Damaged one item.
 	CTRIG_itemDCLICK,           // I have dclicked item.
+    CTRIG_itemDeposit,          // IT_GOLD dropon bank deposit trigger
 	CTRIG_itemDestroy,          // Item is nearly destroyed.
 	CTRIG_itemDROPON_CHAR,      // I have been dropped on this char.
 	CTRIG_itemDROPON_GROUND,    // I dropped an item on the ground.

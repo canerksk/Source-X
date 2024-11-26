@@ -280,11 +280,14 @@ void CChar::LayerAdd( CItem * pItem, LAYER_TYPE layer )
 			return;
 		}
 
-		if (!pItem->IsTypeSpellable() && !pItem->m_itSpell.m_spell && !pItem->IsType(IT_WAND))	// can this item have a spell effect ? If so we do not send
-		{
+		//if (!pItem->IsTypeSpellable() && !pItem->m_itSpell.m_spell && !pItem->IsType(IT_WAND))	// can this item have a spell effect ? If so we do not send
+        // Since most of the memories came with a morex information by default, almost no memory was triggered.
+        if (!(pItem->IsTypeSpellable() || pItem->IsType(IT_WAND)))
+        {
 			if ((IsTrigUsed(TRIGGER_MEMORYEQUIP)) || (IsTrigUsed(TRIGGER_ITEMMEMORYEQUIP)))
 			{
-				CScriptTriggerArgs pArgs;
+				//CScriptTriggerArgs pArgs;
+                CScriptTriggerArgs pArgs(pItem); // added "argo" argument
 				pArgs.m_iN1 = layer;
 				if (pItem->OnTrigger(ITRIG_MemoryEquip, this, &pArgs) == TRIGRET_RET_TRUE)
 				{
@@ -3413,56 +3416,89 @@ bool CChar::ItemEquip( CItem * pItem, CChar * pCharMsg, bool fFromDClick )
 // OnEat()
 // Generating eating animation
 // also calling @Eat and setting food's level (along with other possible stats 'local.hits',etc?)
-void CChar::EatAnim(CItem* pItem, ushort uiQty)
+void CChar::EatAnim(CItem *pItem, ushort uiQty)
 {
-	ADDTOCALLSTACK("CChar::EatAnim");
+    ADDTOCALLSTACK("CChar::EatAnim");
     ASSERT(pItem); //Should never happen, but make sure item is valid.
 
-	static const SOUND_TYPE sm_EatSounds[] = { 0x03a, 0x03b, 0x03c };
-	Sound(sm_EatSounds[g_Rand.GetVal(ARRAY_COUNT(sm_EatSounds))]);
-
-	if ( !IsStatFlag(STATF_ONHORSE) )
-		UpdateAnimate(ANIM_EAT);
+    static const SOUND_TYPE sm_EatSounds[] = { 0x03a, 0x03b, 0x03c };
 
     EMOTEFLAGS_TYPE eFlag = (IsPlayer() ? EMOTEF_HIDE_EAT_PLAYER : EMOTEF_HIDE_EAT_NPC);
     if (!IsSetEmoteFlag(eFlag))
     {
-        tchar* pszMsg = Str_GetTemp();
+        tchar *pszMsg = Str_GetTemp();
         snprintf(pszMsg, Str_TempLength(), g_Cfg.GetDefaultMsg(DEFMSG_MSG_EATSOME), pItem->GetName());
         Emote(pszMsg);
     }
 
-	ushort uiHits = 0;
-	ushort uiMana = 0;
-	ushort uiStam = (ushort)( g_Rand.GetVal2(3, 6) + (uiQty / 5) );
-	ushort uiFood = uiQty;
-	ushort uiStatsLimit = 0;
-	if (IsTrigUsed(TRIGGER_EAT))
-	{
-		CScriptTriggerArgs Args(uiStatsLimit);
-		Args.m_VarsLocal.SetNumNew("Hits", uiHits);
-		Args.m_VarsLocal.SetNumNew("Mana", uiMana);
-		Args.m_VarsLocal.SetNumNew("Stam", uiStam);
-		Args.m_VarsLocal.SetNumNew("Food", uiFood);
+    SOUND_TYPE sound    = sm_EatSounds[g_Rand.GetVal(ARRAY_COUNT(sm_EatSounds))];
+    ANIM_TYPE animType  = ANIM_EAT;
+    ushort uiHits       = 0;
+    ushort uiMana       = 0;
+    ushort uiStam       = (ushort)(g_Rand.GetVal2(3, 6) + (uiQty / 5));
+    ushort uiFood       = uiQty;
+    ushort uiStatsLimit = 0;
+    CScriptTriggerArgs Args(uiStatsLimit);
+    if (IsTrigUsed(TRIGGER_EAT))
+    {
+        Args.m_VarsLocal.SetNumNew("Hits", uiHits);
+        Args.m_VarsLocal.SetNumNew("Mana", uiMana);
+        Args.m_VarsLocal.SetNumNew("Stam", uiStam);
+        Args.m_VarsLocal.SetNumNew("Food", uiFood);
+        Args.m_VarsLocal.SetNumNew("Anim", animType);
+        Args.m_VarsLocal.SetNumNew("Sound", sound);
         Args.m_pO1 = pItem;
-		if ( OnTrigger(CTRIG_Eat, this, &Args) == TRIGRET_RET_TRUE )
-			return;
+        if (OnTrigger(CTRIG_Eat, this, &Args) == TRIGRET_RET_TRUE)
+            return;
 
-		uiHits = (ushort)(Args.m_VarsLocal.GetKeyNum("Hits")) + Stat_GetVal(STAT_STR);
-		uiMana = (ushort)(Args.m_VarsLocal.GetKeyNum("Mana")) + Stat_GetVal(STAT_INT);
-		uiStam = (ushort)(Args.m_VarsLocal.GetKeyNum("Stam")) + Stat_GetVal(STAT_DEX);
-		uiFood = (ushort)(Args.m_VarsLocal.GetKeyNum("Food")) + Stat_GetVal(STAT_FOOD);
-		uiStatsLimit = (ushort)(Args.m_iN1);
-	}
+        uiHits       = (ushort)(Args.m_VarsLocal.GetKeyNum("Hits"));
+        uiMana       = (ushort)(Args.m_VarsLocal.GetKeyNum("Mana"));
+        uiStam       = (ushort)(Args.m_VarsLocal.GetKeyNum("Stam"));
+        uiFood       = (ushort)(Args.m_VarsLocal.GetKeyNum("Food"));
+        animType     = static_cast<ANIM_TYPE>(Args.m_VarsLocal.GetKeyNum("Anim"));
+        sound        = (SOUND_TYPE)(Args.m_VarsLocal.GetKeyNum("Sound"));
+        uiStatsLimit = (ushort)(Args.m_iN1);
+    }
 
-	if ( uiHits )
-		UpdateStatVal(STAT_STR, uiHits, uiStatsLimit);
-	if ( uiMana )
-		UpdateStatVal(STAT_INT, uiMana, uiStatsLimit);
-	if ( uiStam )
-		UpdateStatVal(STAT_DEX, uiStam, uiStatsLimit);
-	if ( uiFood )
-		UpdateStatVal(STAT_FOOD, uiFood, uiStatsLimit);
+    Sound(sound);
+
+    if (!IsStatFlag(STATF_ONHORSE))
+        UpdateAnimate(animType);
+
+    if (uiHits > 0)
+    {
+        uiHits += Stat_GetVal(STAT_STR);
+        UpdateStatVal(STAT_STR, uiHits, uiStatsLimit);
+    }
+    if (uiMana > 0)
+    {
+        uiMana += Stat_GetVal(STAT_INT);
+        UpdateStatVal(STAT_INT, uiMana, uiStatsLimit);
+    }
+    if (uiStam > 0)
+    {
+        uiStam += Stat_GetVal(STAT_DEX);
+        UpdateStatVal(STAT_DEX, uiStam, uiStatsLimit);
+    }
+    if (uiFood > 0)
+    {
+        uiFood += Stat_GetVal(STAT_FOOD);
+        UpdateStatVal(STAT_FOOD, uiFood, uiStatsLimit);
+    }
+
+    //  It didn't mean much since it wasn't triggered after the values ​​changed.
+    if (IsTrigUsed(TRIGGER_EAT))
+    {
+        Args.m_VarsLocal.SetNumNew("Hits", uiHits);
+        Args.m_VarsLocal.SetNumNew("Mana", uiMana);
+        Args.m_VarsLocal.SetNumNew("Stam", uiStam);
+        Args.m_VarsLocal.SetNumNew("Food", uiFood);
+        Args.m_VarsLocal.SetNumNew("Anim", animType);
+        Args.m_VarsLocal.SetNumNew("Sound", sound);
+        Args.m_pO1 = pItem;
+        OnTrigger(CTRIG_Eat, this, &Args);
+    }
+
 }
 
 // Some outside influence may be revealing us.
@@ -5599,48 +5635,191 @@ TRIGRET_TYPE CChar::OnTrigger( lpctstr pszTrigName, CTextConsole * pSrc, CScript
 			}
 		}
 
-		// 5) EVENTSPET triggers for npcs
-		if (m_pNPC != nullptr)
-		{
-			EXC_SET_BLOCK("NPC triggers - EVENTSPET"); // EVENTSPET (constant events of NPCs set from sphere.ini)
-			for (size_t i = 0; i < g_Cfg.m_pEventsPetLink.size(); ++i)
-			{
-				CResourceLink * pLink = g_Cfg.m_pEventsPetLink[i].GetRef();
-				if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
-					continue;
+        // NPCs
+        if (m_pNPC != nullptr)
+        {
+            // 5) EVENTSNPC triggers for npcs
+            // All Npcs
+            EXC_SET_BLOCK("NPC triggers - EVENTSNPC"); // EVENTSNPC (constant events of NPCs set from sphere.ini)
+            for (size_t i = 0; i < g_Cfg.m_pEventsNPCLink.size(); ++i)
+            {
+                CResourceLink *pLink = g_Cfg.m_pEventsNPCLink[i].GetRef();
+                if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                    continue;
 
-				CResourceLock s;
-				if (!pLink->ResourceLock(s))
-					continue;
+                CResourceLock s;
+                if (!pLink->ResourceLock(s))
+                    continue;
 
-				executedEvents.emplace(pLink);
-				iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
-				if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
-					goto stopandret;
-			}
-		}
+                executedEvents.emplace(pLink);
+                iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                    goto stopandret;
+            }
 
-		// 6) EVENTSPLAYER triggers for players
-		if ( m_pPlayer != nullptr )
-		{
-			//	EVENTSPLAYER triggers (constant events of players set from sphere.ini)
-			EXC_SET_BLOCK("chardef triggers - EVENTSPLAYER");
-			for ( size_t i = 0; i < g_Cfg.m_pEventsPlayerLink.size(); ++i )
-			{
-				CResourceLink *pLink = g_Cfg.m_pEventsPlayerLink[i].GetRef();
-				if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
-					continue;
+            ITEMID_TYPE memoryId = Horse_GetMountItemID();
 
-				CResourceLock s;
-				if (!pLink->ResourceLock(s))
-					continue;
+            // 6) EVENTSNPCANIMAL triggers for all animals npc (without mountables)
+            if (m_pNPC->m_Brain == NPCBRAIN_ANIMAL && memoryId <= ITEMID_NOTHING)
+            {
+                EXC_SET_BLOCK("NPC triggers - EVENTSNPCANIMAL");
+                for (size_t i = 0; i < g_Cfg.m_pEventsNPCAnimalLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsNPCAnimalLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
 
-				executedEvents.emplace(pLink);
-				iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
-				if ( iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT )
-					goto stopandret;
-			}
-		}
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+
+            // 7) EVENTSNPCMOUNTABLE triggers for all mountables npc
+            if (memoryId > ITEMID_NOTHING)
+            {
+                EXC_SET_BLOCK("NPC triggers - EVENTSNPCMOUNTABLE");
+                for (size_t i = 0; i < g_Cfg.m_pEventsNPCMountableLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsNPCMountableLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
+
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+
+            // 8) EVENTSNPCMONSTER triggers for all monsters npc
+            // Monsters
+            EXC_SET_BLOCK("NPC triggers - EVENTSNPCMONSTER");
+            if (m_pNPC->m_Brain == NPCBRAIN_MONSTER || m_pNPC->m_Brain == NPCBRAIN_BERSERK || m_pNPC->m_Brain == NPCBRAIN_DRAGON)
+            {
+                for (size_t i = 0; i < g_Cfg.m_pEventsNPCMonsterLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsNPCMonsterLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
+
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+
+            // Shopkeepers
+            // 9) EVENTSNPCSHOP triggers for all shopkeepers
+            EXC_SET_BLOCK("NPC triggers - EVENTSNPCSHOP");
+            if (m_pNPC->m_Brain == NPCBRAIN_VENDOR || m_pNPC->m_Brain == NPCBRAIN_STABLE || m_pNPC->m_Brain == NPCBRAIN_HEALER)
+            {
+                for (size_t i = 0; i < g_Cfg.m_pEventsNPCShopLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsNPCShopLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
+
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+
+            // Guards
+            /*
+                EXC_SET_BLOCK("NPC triggers - EVENTSNPCGUARD");
+                if (m_pNPC->m_Brain == NPCBRAIN_GUARD)
+                {
+                }
+            */
+        }
+
+        // Chars
+        if (m_pPlayer != nullptr)
+        {
+            // 10) EVENTSCHAR triggers for chars (players or staffs)
+            EXC_SET_BLOCK("chardef triggers - EVENTSCHAR");
+            for (size_t i = 0; i < g_Cfg.m_pEventsCharLink.size(); ++i)
+            {
+                CResourceLink *pLink = g_Cfg.m_pEventsCharLink[i].GetRef();
+                if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                    continue;
+
+                CResourceLock s;
+                if (!pLink->ResourceLock(s))
+                    continue;
+
+                executedEvents.emplace(pLink);
+                iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                    goto stopandret;
+            }
+
+            // 11) EVENTSCHARPLAYER triggers for playerss
+            if (GetPrivLevel() <= PLEVEL_Player)
+            {
+                //	EVENTSCHARPLAYER triggers (constant events of players set from sphere.ini)
+                EXC_SET_BLOCK("chardef triggers - EVENTSCHARPLAYER");
+                for (size_t i = 0; i < g_Cfg.m_pEventsCharPlayerLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsCharPlayerLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
+
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+
+            // 12) EVENTSCHARSTAFF triggers for staffs
+            if (GetPrivLevel() >= PLEVEL_Counsel)
+            {
+                //	EVENTSCHARSTAFF triggers (constant events of players set from sphere.ini)
+                EXC_SET_BLOCK("chardef triggers - EVENTSCHARSTAFF");
+                for (size_t i = 0; i < g_Cfg.m_pEventsCharStaffLink.size(); ++i)
+                {
+                    CResourceLink *pLink = g_Cfg.m_pEventsCharStaffLink[i].GetRef();
+                    if (!pLink || !pLink->HasTrigger(iAction) || (executedEvents.find(pLink) != executedEvents.end()))
+                        continue;
+
+                    CResourceLock s;
+                    if (!pLink->ResourceLock(s))
+                        continue;
+
+                    executedEvents.emplace(pLink);
+                    iRet = CScriptObj::OnTriggerScript(s, pszTrigName, pSrc, pArgs);
+                    if (iRet != TRIGRET_RET_FALSE && iRet != TRIGRET_RET_DEFAULT)
+                        goto stopandret;
+                }
+            }
+        }
+
 	}
 
 stopandret:

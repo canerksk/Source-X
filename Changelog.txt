@@ -3915,5 +3915,235 @@ Added: 'H' shortcut for variables to get the value as hexadecimal.
 13-10-2024, Jhobean
 - Added: @PetRelease trigger work like @petdesert and return 1 to prevent the pet from being released.
 
+07-11-2024, canerksk
+- Fixed: If you are around an entity that you own and you are trying to open a bank next to a bank, the "bank" command is perceived as a pet command and the bank does not open. There is no problem when you type "bank" after mounting the mount, but "bank" does not work when you dismount. (Issue #1331)
+25-10-2024, canerksk
+- Added: Added more server (maria db) function
+
+	[PLEVEL 7]
+	f_onserver_db_connect
+	f_onserver_db_query
+	f_onserver_db_execute
+	f_onserver_db_close
+	f_onserver_db_tick
+
+	[FUNCTION f_onserver_db_connect] 
+	// Called when the database is connected.
+	// Variables:
+	// Return:
+	//	1 --> Prevents the connection.
+	
+	[FUNCTION f_onserver_db_query]
+	// called when the database makes a query
+	// Variables:	
+	// LOCAL.QUERY (R) = Query details (string)
+	// LOCAL.NUMROWS (R) = NUMROWS
+	// LOCAL.NUMCOLS (R) = NUMCOLS
+	// LOCAL.ISERROR (R) = Did the execute succeed or did it return an error? (1/0)
+	// Return:
+	//	1 --> Prevents the query.
+	
+	[FUNCTION f_onserver_db_execute]
+	// Called when the database performs an execute.
+	// Variables:	
+	// LOCAL.EXECUTE (R) = Execute details (string)
+	// LOCAL.ISERROR (R) = Did the execute succeed or did it return an error? (1/0)
+	// Return:
+	//	1 --> Prevents the execute
+
+	[FUNCTION f_onserver_db_close]
+	// Called when the database connection is closed.
+	
+	[FUNCTION f_onserver_db_tick]
+	// It is called when the database receives a tick (ping).
+	// Variables:
+	// ARGN1 (R/W) = how long will database be a tick? mysqle ping sending time. (Default: 1000ms)
+26-10-2024, canerksk
+- Added: New client function CLOSECONTAINER and CLOSEVENDORMENU 
+	CLOSEVENDORMENU <vendor uid> OR CLOSEVENDORMENU empty if empty, 14 squares will close the sales menu of all near shops.
+		If no value is entered, it closes the sales menu of all vendors in the surrounding area (14 squares). If a value is entered and this value is the vendor uid, it closes the sales menu of the vendor belonging to that serial number.
+	CLOSECONTAINER <container uid>
+		Actually, there is already a package for this, but since dealing with the package takes a long time, such a command was needed. When CLOSECONTAINER <container uid> is entered, that container is closed in the interface.
+
+25-10-2024, canerksk
+- Added: Added NOREJOIN tag for corpses, If the NOREJOIN tag is one, the player cannot come back to life on that corpse. That is, the player comes back to life but not on the corpse.
+	This tag does not prevent the player from coming back to life, it just prevents them from respawning on that corpse. The player always comes back to life, but not on that corpse.
+25-10-2024, canerksk
+- Added: New trigger @HitReactive Reactive Armor plays a key role in the action mechanism and is currently under very fixed rules. It has been added as a new trigger with some variables to make it a bit more flexible.
+	@HitReactive
+	Local.Sound (r/w) =Sound ID, If it is blank or zero, no sound is produced. (Default: 01F1)
+	Local.EffectID (r/w) = Effect ID, If it is empty or zero, no effect will occur. (Default: 0374a)
+	Local.Damage (r/w) = This is the more1l, or PolyStr, value coming from the reactive armor spell to i_rune_reactive_armor.
+	LOCAL.RefDamage (r/w) = The amount of damage that will be reflected to this other party
+	LOCAL.RedDamage (r/w) = Amount to be deducted from damage received
+	LOCAL.ReactiveDamType (r/w) = Type of damage received (Default: DAMAGE_FIXED andDAMAGE_REACTIVE)
+	NOTE; 
+		1. If no RefDamage or RedDamage values ​​are entered, the system defaults to the Reactive Armor Effect value.
+		2. No damage amount can be less than 1.
+26-10-2024, canerksk
+- Fixed: Memory OnTick link char if not, the skill will not fail.
+	If the memory owner is not present, skills do not fail when taking damage, but if the memory owner is alive, skills fail when taking damage.
+
+- Fixed: The entity was jumping frames in flooded pet commands (come, guard)
+	
+25-10-2024, canerksk 
+- Added: @Logout trigger When NPCs (mounts) are logged out of the session in any way, i.e. mounted or minimised, they will log out (disconnect) but will not trigger.
+25-10-2024, canerksk
+- Added: Added more server function
+
+	[PLEVEL 7]
+	f_onserver_mode
+
+	f_onserver_resync_start
+	f_onserver_resync_restart
+	f_onserver_resync_failed
+	f_onserver_resync_success
+	f_onserver_resync_finish
+	
+	f_onserver_save_stage
+	f_onserver_save_force
+	f_onserver_save_try
+	
+	[FUNCTION f_onserver_mode]
+	// It is triggered when the server changes mode in any way, for example, saving, resyncing, loading, closing, etc.
+	// Variables:
+	// ARGN1 (R) = Server modes;
+	// RestockAll = 0
+	// GarbageCollection = 1
+	// Saving = 2
+	// Running = 3
+	// ResyncPause = 4
+	// PreLoadingINI = 5
+	// Loading = 6 
+	// ResyncLoad = 7
+	// Exiting = 8
+	
+	[FUNCTION f_onserver_resync_start]
+	// Triggered when resync starts.
+	// Variables:
+	// ARGN1 (R) = Resync Paused 
+	// ARGN2 (R/W) = Broadcast message, 1(true) = with broadcast, 0(false) = without broadcast
+	
+	[FUNCTION f_onserver_resync_restart]
+	// Triggered when resync re-starts. (Only trig)
+	
+	[FUNCTION f_onserver_resync_failed]
+	// Triggered when resync failed.
+	// Variables:
+	// ARGN1 (R/W) = Broadcast message, 1(true) = with broadcast, 0(false) = without broadcast	
+	
+	[FUNCTION f_onserver_resync_success]
+	// Triggered when resync success.
+	// Variables:
+	// ARGN1 (R/W) = Broadcast message, 1(true) = with broadcast, 0(false) = without broadcast	
+	
+	[FUNCTION f_onserver_resync_finish]
+	// Triggered when resync finished.
+	// Variables:
+	// ARGN1 (R) = Is paused status	
+	
+	[FUNCTION f_onserver_save_stage]
+	// Triggered when save mode changes
+	// Variables:
+	// ARGN1 (R) = save stage num	
+	
+	[FUNCTION f_onserver_save_force]
+	// Triggered when save force mode
+	// Variables:
+	// ARGN1 (R) = save stage
+	// ARGN2 (R) = save stage num	
+	
+	[FUNCTION f_onserver_save_try]
+	// Variables:
+	// ARGN1 (R) = Force Immediate
+	// ARGN2 (R) = Save Timer
+25-10-2024, canerksk
+- Added: New optionflag OF_PetBehaviorOwnerNeutral
+	If this setting is enabled, pets you own will appear to you with the original noto (old behavior). If this setting is not enabled, the assets you own will always appear natural to you. This setting only applies when the owning character is looking at the asset they own. It does not apply when someone else is looking at the asset you own.
+
+26-10-2024, canerksk
+- Added: New OVERRIDE.MOVESTYLE tag and OF_NPCMovementOldStyle
+	Old style NPC walking has been added as an option.
+	If OVERRIDE.MOVESTYLE=1 is given to an entity, this indicates that the movement of that entity will be done using the old style calculation.
+	You can use OF_NPCMovementOldStyle to apply to all entities without needing a tag.
+13-10-2024, canerksk
+	Event definitions in Sphere.ini have been made more extensive.
+	
+	// Events related to all NPCs (out of use)
+	//EventsPet=e_npc_generic_event
+	
+	// Events related to all NPCs
+	EventsNPC=e_npc_all
+	
+	// Events related to all animals (brain_animal without mountables)
+	EventsNPCAnimal=e_npc_animals
+	
+	// Events related to all monsters (brain_monster, brain_dragon, brain_berserk)
+	EventsNPCMonster=e_npc_monsters
+	
+	// Events related to all animals (brain_animal with mountable)
+	EventsNPCMountable=e_npc_mountables
+	
+	// Events related to all shopkeepers (brain_vendor, brain_stable, brain_healer)
+	EventsNPCShop=e_npc_shopkeepers
+	
+	// Events related to all char (player and staff)
+	EventsChar=e_char_all
+	
+	// Events related to all players (if the plevel is lower than 1)
+	EventsCharPlayer=e_char_players
+
+	// Events related to all regions
+	//EventsRegion=er_region_all
+
+	// Events related to all staff (if plevel is higher than 1)
+	EventsCharStaff=e_char_staffs
+	
+	// Events related to all players (out of use)
+	//EventsPlayer=
+	
+	// Events related to all items
+	EventsItem=ei_items
+	
+	// Events related to all weapons
+	EventsItemWeapon=ei_item_weapons
+26-10-2024, canerksk
+- Added: New @Deposit/@ItemDeposit trigger,
+	SRC/I = Char (Player)
+	ARGO = Gold
+	RETURN 1 = Prevents depositing gold into the bank.
+	It works just like DROPON_ITEM/ITEMDROPON_ITEM.
+	When using the virtual gold feature, there was no trigger triggered when physical gold was deposited into the bank, the Dropon_Item was not working because it was triggered lower down, and instead of moving the Dropon_Item up, a separate trigger was added to track the money on the server more easily from another location.
+
+26-10-2024, canerksk
+- Added: Added new local variable in WOPSYSTEM LOCAL.WOPTalkMode and ini settings WOPTalkMode=10
+	In some clients, different operations can be performed in return for this, for example, if this talkmode went from sphere as TALKMODE SPELL, the operation is performed according to this incoming talk mode according to the client versions. Here, the possibility of changing the talkmode according to the client version used is given. By default, TALKMODE_SPELL
+	Default talk mode: TALKMODE_SPELL = 10
+	Sphere.ini;
+	WOPTalkMode=0/14
+	
+	Trigger;
+	@SpellCast
+	Local.WOPTalkMode=0/14
+	
+	TALKMODE_SAY        = 0 // A character speaking.
+	TALKMODE_SYSTEM     = 1 // Display as system prompt
+	TALKMODE_EMOTE      = 2 // *smiles* at object (client shortcut: :+space)
+	TALKMODE_ITEM       = 6 // text labeling an item. Preceeded by "You see"
+	TALKMODE_NOSCROLL   = 7 // As a status msg. Does not scroll (as reported by the packet guides)
+	TALKMODE_WHISPER    = 8 // Only those close can here. (client shortcut: ;+space)
+	TALKMODE_YELL       = 9 // Can be heard 2 screens away. (client shortcut: !+space)
+	TALKMODE_SPELL      = 10 // Used by spells
+	TALKMODE_GUILD      = 13 // Used by guild chat (client shortcut: \)
+	TALKMODE_ALLIANCE   = 14 // Used by alliance chat (client shortcut: shift+\)
+
+08-11-2024
+- Fixed: ITEMMEMORYEQUIP is not triggered in many default memories.
+			Previously, many memories did not have morex information, but now for some reason many memories have morex information and for this reason the trigger was not triggered in almost most of the memories, the morex query was removed. Also, the slang did not represent the memory item.
+10-11-2024, canerksk
+- Added: To get the character's final karma and fame titles, a lot of combined querying was required with the script, so the NOTOTITLE function was added,
+	.show NOTOTITLE outputs the character's final title according to gender and fame value.
+-11-11-2024, canerksk
+- Fixed: Hits, stam and mana increases were not disabled in the Eat trigger, now if the local values ​​are zero, hits, stam, mana are set to not increase. Those who want to increase can enter these local values. Also, anim and sound were added to the local variables. The trigger was not triggered after the values ​​changed, as a temporary solution, it was made to trigger after the values ​​changed, so now when you eat a meal, @Eat is triggered twice, once before the values ​​change and once after the values ​​change.
 15-11-2024, canerksk
 - Added: Registration of Packet 0x2D MobileAttributes Update packet

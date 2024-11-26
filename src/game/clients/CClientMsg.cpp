@@ -2109,8 +2109,8 @@ void CClient::addMapWaypoint(CObjBase *pObj, MAPWAYPOINT_TYPE type) const
     if (type)
     {
 		// Classic clients only support MAPWAYPOINT_Remove and MAPWAYPOINT_Healer
-		if ((type != MAPWAYPOINT_Healer) && !GetNetState()->isClientKR() && !GetNetState()->isClientEnhanced())
-			return;
+		//if ((type != MAPWAYPOINT_Healer) && !GetNetState()->isClientKR() && !GetNetState()->isClientEnhanced())
+			//return;
 
         if (PacketWaypointAdd::CanSendTo(GetNetState()))
             new PacketWaypointAdd(this, pObj, type);
@@ -2198,11 +2198,11 @@ void CClient::addStatusWindow( CObjBase *pObj, bool fRequested ) // Opens the st
 	}
 }
 
-void CClient::addHitsUpdate( CChar *pChar, bool fFull)
+void CClient::addHitsUpdate(CChar *pChar, bool bFull)
 {
-	ADDTOCALLSTACK("CClient::addHitsUpdate");
-	if ( !pChar )
-		return;
+    ADDTOCALLSTACK("CClient::addHitsUpdate");
+    if (!pChar)
+        return;
 
 	PacketHealthUpdate cmd(pChar, pChar == m_pChar);
 	cmd.send(this);
@@ -2219,6 +2219,9 @@ void CClient::addManaUpdate(CChar *pChar, bool fFull)
 
 	PacketManaUpdate cmd(pChar, true);
 	cmd.send(this);
+
+    PacketMobileAttributes cmdAttr(pChar);
+    cmdAttr.send(this);
 
 	if ( pChar->m_pParty )
 	{
@@ -2238,6 +2241,9 @@ void CClient::addStamUpdate(CChar *pChar, bool fFull)
 
 	PacketStaminaUpdate cmd(pChar, true);
 	cmd.send(this);
+
+    PacketMobileAttributes cmdAttr(pChar);
+    cmdAttr.send(this);
 
 	if ( pChar->m_pParty )
 	{
@@ -3126,18 +3132,21 @@ byte CClient::LogIn( CAccount * pAccount, CSString & sMsg )
 		return( PacketLoginError::MaxClients );
 	}
 
+    byte ErrorCode = PacketLoginError::Blocked;
+
 	//	Do the scripts allow to login this account?
 	pAccount->m_Last_IP.SetAddrIP(GetPeer().GetAddrIP());
 	CScriptTriggerArgs Args;
 	Args.Init(pAccount->GetName());
 	Args.m_iN1 = GetConnectType();
+    Args.m_iN2 = ErrorCode <= PacketLoginError::Invalid ? PacketLoginError::Blocked : ErrorCode;
 	Args.m_pO1 = this;
 	TRIGRET_TYPE tr = TRIGRET_RET_DEFAULT;
 	g_Serv.r_Call("f_onaccount_login", &g_Serv, &Args, nullptr, &tr);
 	if ( tr == TRIGRET_RET_TRUE )
 	{
 		sMsg = g_Cfg.GetDefaultMsg( DEFMSG_MSG_ACC_DENIED );
-		return (PacketLoginError::Blocked);
+        return ((byte)Args.m_iN2);
 	}
 
 	m_pAccount = pAccount;
