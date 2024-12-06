@@ -459,19 +459,19 @@ public:
     CResourceRefArray m_pEventsNPCShopLink;     // EventsNPCShop.
 
      //////////////////////
-    // Chars
+    // Clients
     //////////////////////
-    // EVENTSCHAR
-    CSString m_sEventsChar;              // Key to add Events to all players and staff.
-    CResourceRefArray m_pEventsCharLink; // EventsChar.
+    // EVENTSCLIENT
+    CSString m_sEventsClient;              // Key to add Events to all players and staff.
+    CResourceRefArray m_pEventsClientLink; // EventsClient.
 
-    // EVENTSCHARSTAFF
-    CSString m_sEventsCharStaff;              // Key to add Events to all players.
-    CResourceRefArray m_pEventsCharStaffLink; // EventsCharStaff.
+    // EVENTSCLIENTSTAFF
+    CSString m_sEventsClientStaff;              // Key to add Events to all players.
+    CResourceRefArray m_pEventsClientStaffLink; // EventsClientStaff.
 
-    // EVENTSCHARPLAYER
-    CSString m_sEventsCharPlayer;               // Key to add Events to all players.
-    CResourceRefArray m_pEventsCharPlayerLink;  // EventsCharPlayer.
+    // EVENTSCLIENTPLAYER
+    CSString m_sEventsClientPlayer;               // Key to add Events to all players.
+    CResourceRefArray m_pEventsClientPlayerLink;  // EventsClientPlayer.
 
     //////////////////////
     // Regions
