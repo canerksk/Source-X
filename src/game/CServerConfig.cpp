@@ -211,7 +211,9 @@ CServerConfig::CServerConfig()
 	m_iDistanceYell		= UO_MAP_VIEW_RADAR;
 	m_iDistanceWhisper	= 3;
 	m_iDistanceTalk		= UO_MAP_VIEW_SIZE_DEFAULT;
+    _iDoubleClicKDelay              = 0;
 	m_iDragWeightMax = 300;
+
     m_iNPCDistanceHear  = UO_MAP_VIEW_SIGHT; // Why it was 4? Default range must match with the default value under CClient::Event_Talk_Common.
 	_uiExperimentalFlags= 0;
 	_uiOptionFlags		= (OF_Command_Sysmsgs|OF_NoHouseMuteSpeech);
@@ -297,6 +299,7 @@ CServerConfig::CServerConfig()
 
 	_iTimerCall			= 0;
 	_iTimerCallUnit		= 0;
+
 	m_fAllowLightOverride	= true;
 	m_fAllowNewbTransfer	= false;
 	m_sZeroPoint			= "1323,1624,0";
@@ -544,6 +547,7 @@ enum RC_TYPE
 	RC_DISTANCEWHISPER,
 	RC_DISTANCEYELL,
     RC_DECIMALVARIABLES,
+    RC_DOUBLECLICKDELAY,
 	RC_DRAGWEIGHTMAX,
 #ifdef _DUMPSUPPORT
 	RC_DUMPPACKETSFORACC,
@@ -839,6 +843,7 @@ const CAssocReg CServerConfig::sm_szLoadKeys[RC_QTY + 1]
     { "DISTANCETALK",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iDistanceTalk)		}},
     { "DISTANCEWHISPER",		{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iDistanceWhisper)		}},
     { "DISTANCEYELL",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iDistanceYell)		}},
+    { "DOUBLECLICKDELAY",       { ELEM_INT64,   static_cast<int64>OFFSETOF(CServerConfig,_iDoubleClicKDelay)   }},
     { "DRAGWEIGHTMAX",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iDragWeightMax)		}},
 #ifdef _DUMPSUPPORT
     { "DUMPPACKETSFORACC",		{ ELEM_CSTRING,	static_cast<uint>OFFSETOF(CServerConfig,m_sDumpAccPackets)		}},
@@ -1472,6 +1477,10 @@ bool CServerConfig::r_LoadVal( CScript &s )
 			_uiOptionFlags = s.GetArgUVal();
 			//PrintEFOFFlags(false, true);
 			break;
+
+        case RC_DOUBLECLICKDELAY:
+            _iDoubleClicKDelay = s.GetArg64Val();
+            break;
 
 		case RC_TIMERCALLUNIT:
 			_iTimerCallUnit = s.GetArgVal();
@@ -2283,6 +2292,11 @@ bool CServerConfig::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * 
 		case RC_TIMEUP:
 			sVal.FormatLLVal( CWorldGameTime::GetCurrentTime().GetTimeDiff( g_World._iTimeStartup ) / MSECS_PER_SEC );
 			break;
+
+        case RC_DOUBLECLICKDELAY:
+            sVal.Format64Val(_iDoubleClicKDelay);
+			break;
+
 		case RC_TIMERCALL:
 			if (_iTimerCallUnit)
 				sVal.FormatLLVal(_iTimerCall / MSECS_PER_SEC);

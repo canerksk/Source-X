@@ -360,13 +360,27 @@ bool PacketDoubleClick::onReceive(CNetState* net)
 {
 	ADDTOCALLSTACK("PacketDoubleClick::onReceive");
 
+    CClient *client = net->getClient();
+    ASSERT(client);
+
+    if (g_Cfg._iDoubleClicKDelay > 0)
+    {
+        const int64 _iNow = CWorldGameTime::GetCurrentTime().GetTimeRaw();
+        if (client->m_timeLastEventDClick && (_iNow - client->m_timeLastEventDClick) < g_Cfg._iDoubleClicKDelay)
+        {
+            client->SysMessageDefault(DEFMSG_SKILLWAIT_3);
+            //g_Log.Event(LOGM_GM_CMDS | LOGM_NOCONTEXT, "%x:'%s' Very fast double click ignored. now=%llu last=%llu delay=%llu\n", net->id(), client->GetName(),now,client->m_timeLastEventDClick,g_Cfg._iDoubleClicKDelay);
+            //return true; 
+            return false; 
+        }
+        client->m_timeLastEventDClick = _iNow;
+    }
+
 	dword serial = readInt32();
 
 	CUID target(serial &~ UID_F_RESOURCE);
 	bool macro = (serial & UID_F_RESOURCE) == UID_F_RESOURCE;
 
-	CClient* client = net->getClient();
-	ASSERT(client);
 	client->Event_DoubleClick(target, macro, true);
 	return true;
 }

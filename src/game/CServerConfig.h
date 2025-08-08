@@ -342,6 +342,7 @@ public:
 	bool m_fMonsterFear;			// will they run away if hurt ?
     uint m_iContainerMaxItems;      // Maximum number of items allowed in a container item.
     int m_iDragWeightMax;            // Capacity of maxweight in % character can move with drag and drop
+    int64 _iDoubleClicKDelay;       // double click delay
     int m_iBackpackOverload;        // Maximum weight in stones extra allowed in main backpack.
 	int	 m_iBankIMax;				// Maximum number of items allowed in bank.
 	int  m_iBankWMax;				// Maximum weight in WEIGHT_UNITS stones allowed in bank.
@@ -601,6 +602,7 @@ public:
     int64   _iItemHitpointsUpdate;  // Update period for CCItemDamageable (in seconds in the ini, then converted to msecs).
 	int64   _iTimerCall;            // Amount of time (converted to milliseconds internally) to call f_onserver_timer (0 disables this, default).
     bool    _iTimerCallUnit;        // TRUE mean TimerCall is in second and FALSE mean it's in minute
+
 	bool    m_fAllowLightOverride;  // Allow manual sector light override?
 	CSString m_sZeroPoint;          // Zero point for sextant coordinates counting. Comment this line out if you are not using ML-sized maps.
 	bool    m_fAllowBuySellAgent;   // Allow rapid Buy/Sell through Buy/Sell agent.

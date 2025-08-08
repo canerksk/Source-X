@@ -45,6 +45,7 @@ CClient::CClient(CNetState* state)
 	m_timeLastEvent = CWorldGameTime::GetCurrentTime().GetTimeRaw();
 	m_timeLastEventWalk = CWorldGameTime::GetCurrentTime().GetTimeRaw();
 	m_timeNextEventWalk = 0;
+    m_timeLastEventDClick = 0;
 
 	m_iWalkStepCount = 0;
 	m_iWalkTimeAvg	= 500;

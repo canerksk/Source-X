@@ -149,6 +149,7 @@ public:
 	int64 m_timeLastEvent;		    // Last time we got event from client.
 	int64 m_timeLastEventWalk;	    // Last time we got a walk event from client
 	int64 m_timeNextEventWalk;		// Fastwalk prevention: only allow more walk requests after this timer
+    int64 m_timeLastEventDClick;    // ast Double Click Delay Timer
 
 	// Context of the targetting setup. depends on CLIMODE_TYPE m_Targ_Mode
 	union
