@@ -576,6 +576,7 @@ public:
 	CSString m_sMySqlUser;  // MySQL User.
 	CSString m_sMySqlPass;  // MySQL Password.
 	CSString m_sMySqlDB;    // MySQL DB.
+	int m_sMySqlTimeOut;    // MySQL TimeOut.
 
 	// network settings
 	uint _uiNetworkThreads;         // number of network threads to create

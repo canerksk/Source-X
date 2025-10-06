@@ -49,6 +49,12 @@ bool CDataBase::Connect(const char *user, const char *password, const char *base
     if ( !_myData->ptr )
 		return false;
 
+    // Timeout
+    unsigned int timeout = g_Cfg.m_sMySqlTimeOut; // second
+    mysql_options(_myData, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    mysql_options(_myData, MYSQL_OPT_READ_TIMEOUT, &timeout);
+    mysql_options(_myData, MYSQL_OPT_WRITE_TIMEOUT, &timeout);
+
 	int portnum = 0;
 	const char *port = nullptr;
 	if ( (port = strchr(host, ':')) != nullptr )
@@ -268,7 +274,7 @@ bool CDataBase::_OnTick()
 		return true;
 
 	//	do not ping sql server too heavily
-	if ( ++tickcnt >= 1000 )
+    if (++tickcnt >= g_Cfg.m_sMySqlTimeOut)
 	{
 		tickcnt = 0;
 

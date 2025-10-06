@@ -281,15 +281,24 @@ bool CCMultiMovable::MoveDelta(const CPointMap& ptDelta, bool fUpdateViewFull)
     CItemMulti *pMultiThis = static_cast<CItemMulti*>(pItemThis);
     ASSERT(pMultiThis->GetRegion()->m_iLinkedSectors);
 
-    const int zNew = pItemThis->GetTopZ() + ptDelta.m_z;
-    if ( (ptDelta.m_z > 0) && (zNew >= (UO_SIZE_Z - PLAYER_HEIGHT) - 1) )
+    const CPointMap ptMultiOld = pItemThis->GetTopPoint();
+    CPointMap d                 = ptDelta;
+    if (d.m_map != ptMultiOld.m_map)
+    {
+        g_Log.EventWarn("MoveDelta: Delta map mismatch! ship.m%d delta.m%d -> corrected\n", ptMultiOld.m_map, d.m_map);
+        d.m_map = ptMultiOld.m_map;
+    }
+    ASSERT(d.m_map == ptMultiOld.m_map);
+
+    const int zNew = pItemThis->GetTopZ() + d.m_z;
+    if ((d.m_z > 0) && (zNew >= (UO_SIZE_Z - PLAYER_HEIGHT) - 1))
         return false;
-    if ( (ptDelta.m_z < 0) && (zNew <= (UO_SIZE_MIN_Z + 3)) )
+    if ((d.m_z < 0) && (zNew <= (UO_SIZE_MIN_Z + 3)))
         return false;
 
-    const CPointMap& ptMultiOld = pItemThis->GetTopPoint();
+   // const CPointMap& ptMultiOld = pItemThis->GetTopPoint();
     CPointMap ptMultiNew(ptMultiOld);
-    ptMultiNew += ptDelta;
+    ptMultiNew += d;
     CRegionWorld *pRegionOld = dynamic_cast<CRegionWorld*>(ptMultiOld.GetRegion(REGION_TYPE_AREA));
     CRegionWorld *pRegionNew = dynamic_cast<CRegionWorld*>(ptMultiNew.GetRegion(REGION_TYPE_AREA));
     if (!MoveToRegion(pRegionOld, pRegionNew))
@@ -309,7 +318,18 @@ bool CCMultiMovable::MoveDelta(const CPointMap& ptDelta, bool fUpdateViewFull)
             continue;
 
         CPointMap pt = pObj->GetTopPoint();
-        pt += ptDelta;
+        // (ÖNEMLİ) Obje farklı map'te kalmışsa önce düzelt, sonra delta uygula
+        if (pt.m_map != ptMultiOld.m_map)
+        {
+            g_Log.EventWarn(
+                "MoveDelta: Multi content map mismatch: uid=0x%08x obj.m%d -> ship.m%d (corrected)\n", (dword)pObj->GetUID(), pt.m_map, ptMultiOld.m_map);
+            pt.m_map = ptMultiOld.m_map;
+        }
+
+
+        pt += d;
+
+
         if (!pt.IsValidPoint())  // boat goes out of bounds !
         {
             DEBUG_ERR(("Ship uid=0%x out of bounds\n", (dword)pItemThis->GetUID()));
@@ -340,7 +360,7 @@ bool CCMultiMovable::MoveDelta(const CPointMap& ptDelta, bool fUpdateViewFull)
 
             const CPointMap pt = pObj->GetTopPoint();
             CPointMap ptOld(pt);
-            ptOld -= ptDelta;
+            ptOld -= d; // (ESKİ: ptDelta)
 
             //Remove objects that just moved out of sight
             if ((ptMe.GetDistSight(pt) >= iViewDist) && (ptMe.GetDistSight(ptOld) < iViewDist))
@@ -403,7 +423,7 @@ bool CCMultiMovable::MoveDelta(const CPointMap& ptDelta, bool fUpdateViewFull)
                         {
                             // Update only for new objs
                             CPointMap ptClientOld(pCharClient->GetTopPoint());
-                            ptClientOld -= ptDelta;
+                            ptClientOld -= d; // (ESKİ: ptDelta)
                             pClient->addPlayerSee(ptClientOld);
                         }
                         else
@@ -672,6 +692,9 @@ bool CCMultiMovable::Move(DIR_TYPE dir, int distance)
     ptDelta.ZeroPoint();
     ptDelta.m_map = pItemThis->GetTopMap();
 
+    if (ptDelta.m_map != pItemThis->GetTopMap())
+        ptDelta.m_map = pItemThis->GetTopMap(); 
+
     CPointMap ptFore(pMultiRegion->GetRegionCorner(dir));
 	CPointMap ptBack(pMultiRegion->GetRegionCorner(GetDirTurn(dir, 4)));
     CPointMap ptLeft(pMultiRegion->GetRegionCorner(GetDirTurn(dir, -1 - (dir % 2))));	// acquiring the flat edges requires two 'turns' for diagonal movement
@@ -732,7 +755,8 @@ bool CCMultiMovable::Move(DIR_TYPE dir, int distance)
 		}
 		else
 		{
-			if (!ptFore.IsValidPoint())
+			//if (!ptFore.IsValidPoint())
+            if (!ptFore.IsValidPoint() || (ptFore.m_x < UO_SIZE_X_REAL && ptFore.m_x >= UO_SIZE_X_REAL && (ptFore.m_map <= 1)))
 			{
 				fStopped = true;
 				fTurbulent = true;

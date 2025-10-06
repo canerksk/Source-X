@@ -1214,6 +1214,13 @@ short CChar::GetFollowerSlots() const
     return n64_narrow_n16(val);
 }
 
+short CChar::GetMaxFollowers() const
+{
+    const int64 val = GetDefNum("MAXFOLLOWER", true, 1);
+    ASSERT(val >= 0);
+    return n64_narrow_n16(val);
+}
+
 short CChar::GetCurFollowers() const
 {
     if (!IsSetEF(EF_FollowerList))

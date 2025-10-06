@@ -85,6 +85,7 @@ lpctstr const CChar::sm_szTrigName[CTRIG_QTY+1] =	// static
 	"@GetHit",				// I just got hit.
 	"@Hit",					// I just hit someone. (TARG)
 	"@HitCheck",			// Checking if I can hit my target, overriding also default checks if set to.
+	"@HitDefense",			// 
 	"@HitIgnore",			// I'm going to avoid a target (attacker.n.ignore=1) , should I un-ignore him?.
 	"@HitMiss",				// I just missed.
 	"@HitParry",			// I succesfully parried an hit.

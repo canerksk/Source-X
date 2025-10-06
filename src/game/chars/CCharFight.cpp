@@ -731,19 +731,57 @@ effect_bounce:
 		}
 		else
 		{
-			// pre-AOS armor rating (AR)
-			int iArmorRating = pCharDef->m_defense + m_defense;
+            // pre-AOS armor rating - AR
+            int iArmorRating   = pCharDef->m_defense + m_defense;
+            int iArmorCalcDiff = g_Rand.Get16Val2Fast(7, 35); // 7..35
+            int iArMax         = 0;
+            int iArMin         = 0;
+            int iDef           = 0; // defense roll (to be decided)
 
-			int iArMax = iArmorRating * g_Rand.Get16Val2Fast(7,35) / 100;
-			int iArMin = iArMax / 2;
+            CScriptTriggerArgsPtr pHitDefArgs = CScriptParserBufs::GetCScriptTriggerArgsPtr();
+            pHitDefArgs->m_iN1                = iDmg;   // ARGN1
+            pHitDefArgs->m_iN2                = iDef;   // ARGN2
+            pHitDefArgs->m_iN3                = uiType; // ARGN3
+            pHitDefArgs->m_VarsLocal.SetNum("ArmorRating", iArmorRating);
+            pHitDefArgs->m_VarsLocal.SetNum("ArmorCalcDiff", iArmorCalcDiff);
+            pHitDefArgs->m_VarsLocal.SetNum("ArMax", iArMax);
+            pHitDefArgs->m_VarsLocal.SetNum("ArMin", iArMin);
 
-			int iDef = g_Rand.GetVal2Fast( iArMin, (iArMax - iArMin) + 1 );
+            //iDmg           = pHitDefArgs->m_iN1;
+            ///iDef           = pHitDefArgs->m_iN2;
+            //uiType         = pHitDefArgs->m_iN3;
+            iArmorRating   = (int)pHitDefArgs->m_VarsLocal.GetKeyNum("ArmorRating");
+            iArmorCalcDiff = (int)pHitDefArgs->m_VarsLocal.GetKeyNum("ArmorCalcDiff");
+            iArMax         = (int)pHitDefArgs->m_VarsLocal.GetKeyNum("ArMax");
+            iArMin         = (int)pHitDefArgs->m_VarsLocal.GetKeyNum("ArMin");
+
+            if (iArMax <= 0)
+                iArMax = (iArmorRating * iArmorCalcDiff) / 100;
+            if (iArMin <= 0 || iArMin > iArMax)
+                iArMin = iArMax / 2;
+            if (iDef <= 0)
+            {
+                const int range = (iArMax - iArMin) + 1;
+                iDef = g_Rand.GetVal2Fast(iArMin, range);
+            }
+
+            if (IsTrigUsed(TRIGGER_HITDEFENSE))
+            {
+                OnTrigger(CTRIG_HitDefense, pHitDefArgs, pSrc);
+            }
+
+            //iDmg   = pHitDefArgs->m_iN1;
+            //iDef   = pHitDefArgs->m_iN2;
+            //uiType = pHitDefArgs->m_iN3;
+
 			if ( uiType & DAMAGE_MAGIC )		// magical damage halves effectiveness of defense
 				iDef /= 2;
 
+            //iDmg -= pHitDefArgs->m_iN2;
 			iDmg -= iDef;
 			if (iDmg <= 0)
 				iDmg = 0;
+
 		}
 	}
 

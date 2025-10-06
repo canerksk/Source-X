@@ -1190,6 +1190,7 @@ public:
 	CItem * NPC_Shrink();
     bool FollowersUpdate(CChar * pCharPet, short iPetFollowerSlots = 0, bool fCheckOnly = false );
     short GetFollowerSlots() const;
+    short GetMaxFollowers() const;
     short GetCurFollowers() const;
 
 	int  ItemPickup( CItem * pItem, word amount );

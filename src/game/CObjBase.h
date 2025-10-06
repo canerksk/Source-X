@@ -1102,6 +1102,7 @@ enum CTRIG_TYPE : short
 	CTRIG_GetHit,           // I just got hit.
 	CTRIG_Hit,              // I just hit someone. (TARG)
 	CTRIG_HitCheck,         // A check made before anything else in the Hit proccess, meant to completelly override combat system.
+	CTRIG_HitDefense,       // 
 	CTRIG_HitIgnore,        // I should ignore this target, just giving a record to scripts.
 	CTRIG_HitMiss,          // I just missed.
 	CTRIG_HitParry,			// I succesfully parried an hit.
