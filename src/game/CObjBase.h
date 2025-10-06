@@ -1236,6 +1236,7 @@ enum CTRIG_TYPE : short
 	CTRIG_StatChange,       // A stat value is being changed.
 	CTRIG_StepStealth,      // Made a step while being in stealth .
 	CTRIG_Targon_Cancel,    // Cancel target from TARGETF.
+    CTRIG_Timer,             // My timer has expired.
 	CTRIG_ToggleFlying,     // Toggle between flying/landing.
 	CTRIG_ToolTip,          // someone did tool tips on me.
 	CTRIG_TradeAccepted,    // Everything went well, and we are about to exchange trade items

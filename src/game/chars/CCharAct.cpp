@@ -5939,6 +5939,19 @@ bool CChar::_OnTick()
 		return iCompRet;    // Stop here
 	}
 
+    EXC_SET_BLOCK("timer trigger");
+    TRIGRET_TYPE iRet = TRIGRET_RET_DEFAULT;
+
+    if ((IsTrigUsed(TRIGGER_TIMER)) || (IsTrigUsed(TRIGGER_CHARTIMER)))
+    {
+        CScriptTriggerArgsPtr pScriptArgs = CScriptParserBufs::GetCScriptTriggerArgsPtr();
+        iRet                              = OnTrigger(CTRIG_Timer, pScriptArgs, &g_Serv);
+        if (iRet == TRIGRET_RET_TRUE)
+        {
+            return true;
+        }
+    }
+
     // My turn to do some action.
     EXC_SET_BLOCK("Timer expired");
     OnTickSkill();

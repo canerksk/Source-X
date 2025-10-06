@@ -2715,7 +2715,38 @@ bool CObjBase::r_Verb( CScript & s, CTextConsole * pSrc ) // Execute command fro
 				}
 			}
 			break;
-
+            case OV_TIMER:
+            {
+                EXC_SET_BLOCK("TIMER");
+                int64 iTimeout = s.GetArg64Val();
+                if (g_Serv.IsLoadingGeneric())
+                {
+                    const int iPrevBuild = g_World.m_iPrevBuild;
+                    /*
+                * Newer X builds have a different timer stored on saves (storing the msec in which it is going to tick instead of the seconds until it ticks)
+                * So the new timer will be the current time in msecs (SetTimeout)
+                * For older builds, the timer is stored in seconds (SetTimeoutD)
+                */
+                    if (iPrevBuild >= 2866) // commit #e08723c54b0a4a3b1601eba6f34a6118891f1313
+                    {
+                        // If TIMER = 0 was saved it means that at the moment of the worldsave the timer was elapsed but its object could not tick,
+                        //	since it was waiting a GoAwake() call. Now set the timer to tick asap.
+                        _SetTimeout(iTimeout); // new timer: set msecs timer
+                        break;
+                    }
+                }
+                _SetTimeoutS(iTimeout); // old timer: in seconds.
+            }  break;
+            case OV_TIMERD:
+            {
+                EXC_SET_BLOCK("TIMERD");
+                _SetTimeoutD(s.GetArgLLVal());
+            } break;
+            case OV_TIMERMS:
+            {
+                EXC_SET_BLOCK("TIMERMS");
+                _SetTimeout(s.GetArgLLVal());
+            } break;
 		case OV_TIMERF:
 		case OV_TIMERFMS:
 			{
