@@ -1408,6 +1408,9 @@ bool CWorld::LoadWorld() // Load world from script
 		m_Parties.clear();
 		m_GMPages.clear();
 
+        m_Chars.clear();
+        m_Items.clear();
+
 		_Sectors.Close(true);
 		CloseAllUIDs();
 		_GameClock.Init();
@@ -1722,6 +1725,9 @@ void CWorld::Close()
 
 	m_Stones.clear();
 	m_Multis.clear();
+
+    m_Chars.clear();
+    m_Items.clear();
 
     {
 #if MT_ENGINES

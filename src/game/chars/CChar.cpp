@@ -265,7 +265,7 @@ CChar::CChar( CREID_TYPE baseID ) :
 {
     ADDTOCALLSTACK("CChar::CChar");
 	g_Serv.StatInc( SERV_STAT_CHARS );	// Count created CChars.
-
+    g_World.m_Chars.emplace_back(this);
 	m_pArea = nullptr;
 	m_pParty = nullptr;
 	m_pClient = nullptr;	// is the char a logged in player?
@@ -447,6 +447,11 @@ void CChar::DeletePrepare()
 {
 	ADDTOCALLSTACK("CChar::DeletePrepare");
     CContainer::ContentDelete(true);	// This object and its contents need to be deleted on the same tick
+
+    // Remove this char the world
+    //g_World.m_Chars.remove_ptr(this);
+    //g_World.m_Chars.erase_element(this);
+
     CObjBase::DeletePrepare();
 }
 
