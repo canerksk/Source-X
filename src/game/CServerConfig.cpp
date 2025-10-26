@@ -1937,7 +1937,7 @@ bool CServerConfig::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * 
             {
                 for (size_t i = 0; i < g_World.m_Chars.size(); ++i)
                 {
-                    pChar = g_World.m_Chars[i];
+                    pChar = g_World.m_Chars[i].get();
                     if (pChar == NULL)
                         continue;
                     if (!pChar->IsDeleted())
@@ -1952,9 +1952,9 @@ bool CServerConfig::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * 
             SKIP_SEPARATORS(pszCmd);
             sVal.SetValFalse();
 
-			for (size_t i = 0; i < g_World.m_Chars.size(); ++i)
+            for (size_t i = 0; i < g_World.m_Chars.size(); ++i)
             {
-                pChar = g_World.m_Chars[i];
+                pChar = g_World.m_Chars[i].get();
                 if (pChar == nullptr)
                     continue;
                 if (!pChar->IsDeleted())
@@ -1979,7 +1979,7 @@ bool CServerConfig::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * 
             {
                 for (size_t i = 0; i < g_World.m_Items.size(); ++i)
                 {
-                    pItem = g_World.m_Items[i];
+                    pItem = g_World.m_Items[i].get();
                     if (pItem == NULL)
                         continue;
                     if (!pItem->IsDeleted())
@@ -1996,7 +1996,7 @@ bool CServerConfig::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * 
 
             for (size_t i = 0; i < g_World.m_Items.size(); ++i)
             {
-                pItem = g_World.m_Items[i];
+                pItem = g_World.m_Items[i].get();
                 if (pItem == nullptr)
                     continue;
                 if (!pItem->IsDeleted())

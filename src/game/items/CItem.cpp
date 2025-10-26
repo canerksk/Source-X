@@ -286,7 +286,8 @@ CItem::~CItem()
 	DeletePrepare();	// Using this in the destructor will fail to call virtuals, but it's better than nothing.
 	CItem::DeleteCleanup(true);
 
-   g_World.m_Items.RemovePtr(this);
+    g_World.m_Items.erase_element(this);
+
 	g_Serv.StatDec(SERV_STAT_ITEMS);
 
 	EXC_CATCH;

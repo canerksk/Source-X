@@ -181,10 +181,8 @@ public:
 
 	sl::raw_ptr_view_vector<CItemMulti>		m_Multis;		// World multis?
 
-    //sl::unique_ptr_vector<CChar> m_Chars;                   // World mobile chars
-    //sl::unique_ptr_vector<CItem> m_Items;                   // World mobile items
-    CSPtrTypeArray<CChar *> m_Chars;                        //
-    CSPtrTypeArray<CItem *> m_Items;                        //
+    sl::raw_ptr_view_vector<CChar> m_Chars;                 // World mobile chars
+    sl::raw_ptr_view_vector<CItem> m_Items;                 // World mobile items
 
 	sl::smart_ptr_view_vector<CResourceDef> m_TileTypes;	// Links to CItemTypeDef items owned by g_Cfg.m_ResHash
 

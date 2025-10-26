@@ -366,6 +366,7 @@ CChar::~CChar()
     ClearNPC();
     ClearPlayer();
 
+    g_World.m_Chars.erase_element(this);
     g_Serv.StatDec( SERV_STAT_CHARS );
 
 	EXC_CATCH;
