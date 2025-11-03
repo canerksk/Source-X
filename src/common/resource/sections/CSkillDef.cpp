@@ -38,6 +38,7 @@ enum SKC_TYPE
     SKC_PROMPT_CLILOC,
     SKC_PROMPT_MSG,
     SKC_RANGE,
+    SKC_SKILL_GAIN_RANGE,
     SKC_STAT_DEX,
     SKC_STAT_INT,
     SKC_STAT_STR,
@@ -64,6 +65,7 @@ lpctstr const CSkillDef::sm_szLoadKeys[SKC_QTY+1] =
     "PROMPT_CLILOC",
     "PROMPT_MSG",
     "RANGE",
+    "SKILL_GAIN_RANGE",
     "STAT_DEX",
     "STAT_INT",
     "STAT_STR",
@@ -83,7 +85,27 @@ CSkillDef::CSkillDef( SKILL_TYPE skill ) :
     memset(m_Stat, 0, sizeof(m_Stat));
     memset(m_StatBonus, 0, sizeof(m_StatBonus));
     m_AdvRate.Init();
+    m_GainRanges.clear();
 }
+
+int CSkillDef::GetGainChance(int iCurrentSkill) const
+{
+    if (m_GainRanges.empty())
+    {
+        //g_Log.Event(LOGM_DEBUG, "GetGainChance: NO RANGES!\n");
+        return 0;
+    }
+    for (size_t i = 0; i < m_GainRanges.size(); i++)
+    {
+        const SkillGainRange &range = m_GainRanges[i];
+        if (iCurrentSkill >= range.m_iSkillMin && iCurrentSkill <= range.m_iSkillMax)
+        {
+            return range.m_iChance;
+        }
+    }
+    return 0;
+}
+
 
 bool CSkillDef::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * pSrc, bool fNoCallParent, bool fNoCallChildren )
 {
@@ -134,6 +156,25 @@ bool CSkillDef::r_WriteVal( lpctstr ptcKey, CSString & sVal, CTextConsole * pSrc
         case SKC_RANGE:
             sVal.FormatVal(m_Range);
             break;
+        case SKC_SKILL_GAIN_RANGE:
+        {
+            CSString sTemp;
+            for (size_t i = 0; i < m_GainRanges.size(); i++)
+            {
+                if (i > 0)
+                    sTemp += ";";
+
+                CSString sRange;
+                // Ondalık format
+                sRange.Format("%.1f,%.1f,%.2f",
+                    m_GainRanges[i].m_iSkillMin / 10.0, // 0 -> 0.0
+                    m_GainRanges[i].m_iSkillMax / 10.0, // 1000 -> 100.0
+                    m_GainRanges[i].m_iChance / 100.0); // 5050 -> 50.50
+                sTemp += sRange;
+            }
+            sVal = sTemp;
+        }
+        break;
         case SKC_BONUS_STATS: // "BONUS_STATS"
             sVal.FormatVal( m_StatPercent );
             break;
@@ -214,6 +255,54 @@ bool CSkillDef::r_LoadVal( CScript &s )
         case SKC_RANGE:
             m_Range = s.GetArgVal();
             break;
+        case SKC_SKILL_GAIN_RANGE:
+        {
+            // m_GainRanges.clear();
+
+            TCHAR szBuffer[256];
+            strncpy(szBuffer, s.GetArgStr(), sizeof(szBuffer) - 1);
+            szBuffer[sizeof(szBuffer) - 1] = '\0';
+
+            // Token'lara ayır
+            TCHAR *pszMin    = strtok(szBuffer, ",");
+            TCHAR *pszMax    = strtok(NULL, ",");
+            TCHAR *pszChance = strtok(NULL, ",");
+
+            if (!pszMin || !pszMax || !pszChance)
+            {
+                g_Log.EventError("SKILL_GAIN_RANGE: Invalid format, need 3 values (min,max,chance%%)\n");
+                return false;
+            }
+
+            // Float olarak parse et
+            double dMin    = atof(pszMin);
+            double dMax    = atof(pszMax);
+            double dChance = atof(pszChance);
+
+            // Validasyon
+            if (dMin >= dMax)
+            {
+                g_Log.EventError("SKILL_GAIN_RANGE: min (%.1f) must be less than max (%.1f)\n", dMin, dMax);
+                return false;
+            }
+
+            if (dChance < 0.0 || dChance > 100.0)
+            {
+                g_Log.EventError("SKILL_GAIN_RANGE: chance (%.1f) must be between 0.0-100.0\n", dChance);
+                return false;
+            }
+
+            SkillGainRange range;
+            range.m_iSkillMin = static_cast<int>(dMin * 10);     // 0.0 -> 0, 50.0 -> 500
+            range.m_iSkillMax = static_cast<int>(dMax * 10);     // 100.0 -> 1000
+            range.m_iChance   = static_cast<int>(dChance * 100); // 50.5 -> 5050 (%50.5)
+
+            m_GainRanges.push_back(range);
+
+            g_Log.Event(LOGM_DEBUG, "SKILL_GAIN_RANGE: [%.1f-%.1f] = %.2f%% (internal: %d-%d=%d)\n", dMin, dMax, dChance, range.m_iSkillMin, range.m_iSkillMax,
+                range.m_iChance);
+        }
+        break;
         case SKC_BONUS_STATS: // "BONUS_STATS"
             m_StatPercent = (uchar)(s.GetArgVal());
             break;

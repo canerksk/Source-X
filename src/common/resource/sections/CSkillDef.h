@@ -53,6 +53,17 @@ enum SKF_TYPE
 *          RES_SKILL
 *          [SKILL n]
 */
+struct SkillGainRange
+{
+    int m_iSkillMin; // Min skill level (0-1000)
+    int m_iSkillMax; // Max skill level (0-1000)
+    int m_iChance;   // Gain chance (0-1000 = %0-%100)
+
+    SkillGainRange() :
+        m_iSkillMin(0), m_iSkillMax(0), m_iChance(0)
+    {}
+};
+
 struct CSkillDef : public CResourceLink // For skill def table
 {
     static lpctstr const sm_szTrigName[SKTRIG_QTY+1];
@@ -78,6 +89,16 @@ public:
     CValueCurveDef	m_Values;       // VALUES= influence for items made with 0 to 100 skill levels.
     int				m_GainRadius;	// GAINRADIUS= max. amount of skill above the necessary skill for a task to gain from it.
     int				m_Range;		// RANGE=n Used for SKF_GATHER skills represnting the max distace at which it can be used.
+
+    	// new ph system variables
+    std::vector<SkillGainRange> m_GainRanges;
+
+    bool HasGainRanges() const
+    {
+        return !m_GainRanges.empty();
+    }
+
+    int GetGainChance(int iCurrentSkill) const;
 
     dword			m_dwFlags;      // Skill Flags.
     dword			m_dwGroup;      // Skill Group.

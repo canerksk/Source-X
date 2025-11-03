@@ -411,7 +411,21 @@ void CChar::Skill_Experience( SKILL_TYPE skill, int iDifficulty )
 		return;
 	}
 
-	int64 iChance = pSkillDef->m_AdvRate.GetChancePercent(uiSkillLevel);
+	//int64 iChance = pSkillDef->m_AdvRate.GetChancePercent(uiSkillLevel);
+	int64 iChance = 0;
+    int iRoll = g_Rand.GetVal(1000);
+
+    if (pSkillDef->HasGainRanges())
+    {
+        iRoll = g_Rand.GetVal(10000);
+        iChance = pSkillDef->GetGainChance(uiSkillLevel);
+    }
+    else
+    {
+        // backward compatibility
+        iChance       = pSkillDef->m_AdvRate.GetChancePercent(uiSkillLevel);
+    }
+
 	int64 iSkillMax = Skill_GetMax(skill);	// max advance for this skill.
 
     CScriptTriggerArgsPtr pScriptArgs = CScriptParserBufs::GetCScriptTriggerArgsPtr();
@@ -431,7 +445,6 @@ void CChar::Skill_Experience( SKILL_TYPE skill, int iDifficulty )
 	if ( iChance <= 0 )
 		return;
 
-	const int iRoll = g_Rand.GetVal(1000);
 	if ( uiSkillLevelFixed < (ushort)iSkillMax )	// are we in position to gain skill ?
 	{
 		// slightly more chance of decay than gain
