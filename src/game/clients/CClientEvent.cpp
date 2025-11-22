@@ -3094,35 +3094,140 @@ void CClient::Event_ExtCmd( EXTCMD_TYPE type, tchar *pszName )
 			return;
 		}
 
-		case EXTCMD_DOOR_AUTO:	// open door macro
-		{
-			CPointMap pt = m_pChar->GetTopPoint();
-			char iCharZ = pt.m_z;
+       case EXTCMD_DOOR_AUTO:
+        {
+            CPointMap charPt = m_pChar->GetTopPoint();
+            int charZ        = charPt.m_z;
 
-			pt.Move(m_pChar->m_dirFace);
-            auto Area = CWorldSearchHolder::GetInstance(pt, bDoorAutoDist);
-			for (;;)
-			{
-				CItem *pItem = Area->GetItem();
-				if ( !pItem )
-					return;
+            // Karakterin baktığı "tam" kare (face tile)
+            int16 faceX = charPt.m_x;
+            int16 faceY = charPt.m_y;
+            switch (m_pChar->m_dirFace)
+            {
+                case DIR_N:
+                    --faceY;
+                    break;
+                case DIR_NE:
+                    ++faceX;
+                    --faceY;
+                    break;
+                case DIR_E:
+                    ++faceX;
+                    break;
+                case DIR_SE:
+                    ++faceX;
+                    ++faceY;
+                    break;
+                case DIR_S:
+                    ++faceY;
+                    break;
+                case DIR_SW:
+                    --faceX;
+                    ++faceY;
+                    break;
+                case DIR_W:
+                    --faceX;
+                    break;
+                case DIR_NW:
+                    --faceX;
+                    --faceY;
+                    break;
+                default:
+                    break;
+            }
 
-				switch ( pItem->GetType() )
-				{
-					case IT_DOOR:
-					case IT_DOOR_LOCKED:
-					case IT_PORTCULIS:
-					case IT_PORT_LOCKED:
-						if ( abs(iCharZ - pItem->GetTopPoint().m_z) < 20 )
-						{
-							m_pChar->SysMessageDefault(DEFMSG_MACRO_OPENDOOR);
-							m_pChar->Use_Obj(pItem, true);
-							return;
-						}
-				}
-			}
-			return;
-		}
+            // 1) Önce tam karşıdaki karenin içindeki kapıyı ara (sadece o tile)
+            CPointMap facePt(static_cast<short>(faceX), static_cast<short>(faceY), static_cast<char>(charPt.m_z), static_cast<uchar>(charPt.m_map));
+            auto AreaFace = CWorldSearchHolder::GetInstance(facePt, 0); // radius 0 => sadece o tile
+
+            for (;;)
+            {
+                CItem *pItem = AreaFace->GetItem();
+                if (!pItem)
+                    break;
+
+                switch (pItem->GetType())
+                {
+                    case IT_DOOR:
+                    case IT_DOOR_LOCKED:
+                    case IT_PORTCULIS:
+                    case IT_PORT_LOCKED:
+                    {
+                        const CPointMap itPt = pItem->GetTopPoint();
+                        int itemTopZ         = itPt.m_z;
+
+                        // Z örtüşmesi ve yakınlık kontrolü
+                        bool z_overlap = ((itemTopZ + pItem->GetHeight()) > charZ) && ((charZ + 16) > itemTopZ);
+                        bool z_close   = (std::abs(charZ - itemTopZ) < 20);
+                        if (!z_overlap || !z_close)
+                            break;
+
+                        if (!m_pChar->CanSee(pItem))
+                            break;
+
+                        // Tam karenin içindeyse hemen aç ve çık (sadece bir hedef çağrısı)
+                        m_pChar->SysMessageDefault(DEFMSG_MACRO_OPENDOOR);
+                        m_pChar->Use_Obj(pItem, true);
+                        return;
+                    }
+                    default:
+                        break;
+                }
+            }
+
+            // 2) Tam karşıda kapı yoksa: karakter merkezinden bDoorAutoDist kadar ara, en yakın uygun kapıyı aç
+            CPointMap centerPt(static_cast<short>(charPt.m_x), static_cast<short>(charPt.m_y), static_cast<char>(charPt.m_z), static_cast<uchar>(charPt.m_map));
+            auto Area = CWorldSearchHolder::GetInstance(centerPt, bDoorAutoDist);
+
+            CItem *bestCandidate = nullptr;
+            int bestDist         = INT_MAX;
+
+            for (;;)
+            {
+                CItem *pItem = Area->GetItem();
+                if (!pItem)
+                    break;
+
+                switch (pItem->GetType())
+                {
+                    case IT_DOOR:
+                    case IT_DOOR_LOCKED:
+                    case IT_PORTCULIS:
+                    case IT_PORT_LOCKED:
+                    {
+                        const CPointMap itPt = pItem->GetTopPoint();
+                        int itemTopZ         = itPt.m_z;
+
+                        bool z_overlap = ((itemTopZ + pItem->GetHeight()) > charZ) && ((charZ + 16) > itemTopZ);
+                        bool z_close   = (std::abs(charZ - itemTopZ) < 20);
+                        if (!z_overlap || !z_close)
+                            break;
+
+                        if (!m_pChar->CanSee(pItem))
+                            break;
+
+                        // Tam karşıdaki olsaydı 1. aşamada bulunurdu; burada en yakın kapıyı seçiyoruz
+                        int dist = centerPt.GetDist(itPt);
+                        if (dist < bestDist)
+                        {
+                            bestDist      = dist;
+                            bestCandidate = pItem;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+
+            if (bestCandidate)
+            {
+                m_pChar->SysMessageDefault(DEFMSG_MACRO_OPENDOOR);
+                m_pChar->Use_Obj(bestCandidate, true);
+            }
+
+            return;
+        }
 
 		case EXTCMD_INVOKE_VIRTUE:
 		{
