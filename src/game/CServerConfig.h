@@ -571,11 +571,21 @@ public:
 
 	//	MySQL features
 	bool    m_fMySql;       // Enables MySQL.
-	bool    m_fMySqlTicks;  // Enables ticks from MySQL.
-	CSString m_sMySqlHost;  // MySQL Host.
-	CSString m_sMySqlUser;  // MySQL User.
-	CSString m_sMySqlPass;  // MySQL Password.
-	CSString m_sMySqlDB;    // MySQL DB.
+
+    CSString m_sMySqlHost; // MySQL Host.
+    CSString m_sMySqlUser; // MySQL User.
+    CSString m_sMySqlPass; // MySQL Password.
+    CSString m_sMySqlDB;   // MySQL DB.
+
+    bool m_fMySqlReConnect;
+    byte m_bMySqlUseSSL;
+	bool m_fMySqlTicks;  // Enables ticks from MySQL.
+    int m_iMySqlTickTime;
+
+    int m_iMySqlTimeOutConnect;
+    int m_iMySqlTimeOutRead;
+    int m_iMySqlTimeOutWrite;
+
 
 	// network settings
 	uint _uiNetworkThreads;         // number of network threads to create

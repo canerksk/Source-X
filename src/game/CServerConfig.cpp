@@ -644,12 +644,18 @@ enum RC_TYPE
 	RC_MULFILES,
 	RC_MURDERDECAYTIME,			// m_iMurderDecayTime;
 	RC_MURDERMINCOUNT,			// m_iMurderMinCount
-	RC_MYSQL,					// m_fMySql
-	RC_MYSQLDB,					// m_sMySqlDatabase
-	RC_MYSQLHOST,				// m_sMySqlHost
-	RC_MYSQLPASS,				// m_sMySqlPassword
-	RC_MYSQLTICKS,				// m_fMySqlTicks
-	RC_MYSQLUSER,				// m_sMySqlUser
+    RC_MYSQL,                   //	m_bMySql
+    RC_MYSQLDB,                 //	m_sMySqlDatabase
+    RC_MYSQLHOST,               //	m_sMySqlHost
+    RC_MYSQLPASS,               //	m_sMySqlPassword
+    RC_MYSQLRECONNECT,          //	m_fMySqlReConnect
+    RC_MYSQLTICKS,              //	m_fMySqlTicks
+    RC_MYSQLTICKTIME,           //	m_iMySqlTickTime
+    RC_MYSQLTIMEOUTCONNECT,     //	m_iMySqlTimeOutConnect
+    RC_MYSQLTIMEOUTREAD,        //	m_iMySqlTimeOutRead
+    RC_MYSQLTIMEOUTWRITE,       //	m_iMySqlTimeOutWrite
+    RC_MYSQLUSER,               //	m_sMySqlUser
+    RC_MYSQLUSESSL,             //	m_fMySqlUseSSL
 	RC_NETTTL,					// m_iNetHistoryTTL
     RC_NETWORKTHREADPRIORITY,	// _iNetworkThreadPriority
 	RC_NETWORKTHREADS,			// _uiNetworkThreads
@@ -939,13 +945,21 @@ const CAssocReg CServerConfig::sm_szLoadKeys[RC_QTY + 1]
 	{ "MULFILES",				{ ELEM_VOID,	0												}},
 	{ "MURDERDECAYTIME",		{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iMurderDecayTime)		}},
 	{ "MURDERMINCOUNT",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iMurderMinCount)		}}, // amount of murders before we get title.
-	{ "MYSQL",					{ ELEM_BOOL,	static_cast<uint>OFFSETOF(CServerConfig,m_fMySql)				}},
+
+    { "MYSQL",					{ ELEM_BOOL,	static_cast<uint>OFFSETOF(CServerConfig,m_fMySql)				}},
 	{ "MYSQLDATABASE",			{ ELEM_CSTRING,	static_cast<uint>OFFSETOF(CServerConfig,m_sMySqlDB)				}},
 	{ "MYSQLHOST",				{ ELEM_CSTRING, static_cast<uint>OFFSETOF(CServerConfig,m_sMySqlHost)			}},
 	{ "MYSQLPASSWORD",			{ ELEM_CSTRING,	static_cast<uint>OFFSETOF(CServerConfig,m_sMySqlPass)			}},
+    { "MYSQLRECONNECT",         { ELEM_BOOL, static_cast<uint> OFFSETOF(CServerConfig, m_fMySqlReConnect) } },
 	{ "MYSQLTICKS",				{ ELEM_BOOL,	static_cast<uint>OFFSETOF(CServerConfig,m_fMySqlTicks)			}},
+    { "MYSQLTICKTIME",          { ELEM_INT, static_cast<uint> OFFSETOF(CServerConfig, m_iMySqlTickTime) } },
+    { "MYSQLTIMEOUTCONNECT",    { ELEM_INT, static_cast<uint> OFFSETOF(CServerConfig, m_iMySqlTimeOutConnect) } },
+    { "MYSQLTIMEOUTREAD",       { ELEM_INT, static_cast<uint> OFFSETOF(CServerConfig, m_iMySqlTimeOutRead) } },
+    { "MYSQLTIMEOUTWRITE",      { ELEM_INT, static_cast<uint> OFFSETOF(CServerConfig, m_iMySqlTimeOutWrite) } },
 	{ "MYSQLUSER",				{ ELEM_CSTRING,	static_cast<uint>OFFSETOF(CServerConfig,m_sMySqlUser)			}},
-	{ "NETTTL",					{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig, m_iNetHistoryTTLSeconds)		}},
+    { "MYSQLUSESSL",            { ELEM_INT, static_cast<uint> OFFSETOF(CServerConfig, m_bMySqlUseSSL) } },
+
+    { "NETTTL",					{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig, m_iNetHistoryTTLSeconds)		}},
     { "NETWORKTHREADPRIORITY",	{ ELEM_MASK_INT,static_cast<uint>OFFSETOF(CServerConfig,_iNetworkThreadPriority)}},
 	{ "NETWORKTHREADS",			{ ELEM_MASK_INT,static_cast<uint>OFFSETOF(CServerConfig,_uiNetworkThreads)		}},
 	{ "NORESROBE",				{ ELEM_BOOL,	static_cast<uint>OFFSETOF(CServerConfig,m_fNoResRobe)			}},
@@ -1248,13 +1262,7 @@ bool CServerConfig::r_LoadVal( CScript &s )
 		}
         case RC_COMBATFLAGS:
         {
-            uint uiVal = s.GetArgUVal();
-            if ((uiVal & (COMBAT_PREHIT|COMBAT_SWING_NORANGE)) == (COMBAT_PREHIT|COMBAT_SWING_NORANGE))
-            {
-                uiVal ^= COMBAT_SWING_NORANGE;
-                LOG_WARN_NOINIT("CombatFlags COMBAT_PREHIT and COMBAT_SWING_NORANGE cannot coexist. Turning off COMBAT_SWING_NORANGE.\n");
-            }
-            m_iCombatFlags = uiVal;
+            m_iCombatFlags = s.GetArgUVal();
         }
 		break;
         case RC_CONTAINERMAXITEMS:
