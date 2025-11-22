@@ -32,13 +32,19 @@ void HistoryIP::setBlocked(bool isBlocked, int64 timeoutSeconds)
 {
     // block ip
     ADDTOCALLSTACK("HistoryIP:setBlocked");
+    CScriptTriggerArgsPtr pScriptArgs = CScriptParserBufs::GetCScriptTriggerArgsPtr();
+    pScriptArgs->Init(m_ip.GetAddrStr());
+
     if (isBlocked == true)
     {
-        CScriptTriggerArgsPtr pScriptArgs = CScriptParserBufs::GetCScriptTriggerArgsPtr();
-        pScriptArgs->Init(m_ip.GetAddrStr());
         pScriptArgs->m_iN1 = timeoutSeconds;
         g_Serv.r_Call("f_onserver_blockip", pScriptArgs, &g_Serv );
         timeoutSeconds = pScriptArgs->m_iN1;
+    }
+    else
+    {
+        CScriptTriggerArgs args(m_ip.GetAddrStr());
+        g_Serv.r_Call("f_onserver_unblockip", pScriptArgs, &g_Serv);
     }
 
     m_fBlocked = isBlocked;
