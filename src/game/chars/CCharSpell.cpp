@@ -3317,7 +3317,7 @@ void CChar::Spell_CastFail(bool fAbort)
 {
 	ADDTOCALLSTACK("CChar::Spell_CastFail");
 	ITEMID_TYPE iT1 = ITEMID_FX_SPELL_FAIL;
-    SOUND_CODE Snd  = SOUND_SPELL_FIZZLE;
+    SOUND_TYPE Snd  = SOUND_SPELL_FIZZLE;
 
 	ushort iManaLoss = 0, iTithingLoss = 0;
 	CSpellDef *pSpell = g_Cfg.GetSpellDef(m_atMagery.m_iSpell);
@@ -3361,12 +3361,14 @@ void CChar::Spell_CastFail(bool fAbort)
 
     iManaLoss = (ushort)pScriptArgs->m_iN2;
     iTithingLoss = (ushort)pScriptArgs->m_VarsLocal.GetKeyNum("TithingLoss");
-    Snd          = (SOUND_CODE)pScriptArgs->m_VarsLocal.GetKeyNum("Sound");
+    
 
     HUE_TYPE iColor = (HUE_TYPE)(pScriptArgs->m_VarsLocal.GetKeyNum("EffectColor"));
     dword dwRender = (dword)pScriptArgs->m_VarsLocal.GetKeyNum("EffectRender");
 
     iT1 = (ITEMID_TYPE)(ResGetIndex((dword)pScriptArgs->m_VarsLocal.GetKeyNum("CreateObject1")));
+    Snd = (SOUND_TYPE)pScriptArgs->m_VarsLocal.GetKeyNum("Sound");
+
 	if (iT1)
 		Effect(EFFECT_OBJ, iT1, this, 1, 30, false, iColor, dwRender);
     Sound(Snd);
