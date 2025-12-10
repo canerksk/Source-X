@@ -304,6 +304,7 @@ public:
 
 	// Magic
 	bool m_fReagentsRequired;   // Do spells require reagents or tithing points to be casted?
+	bool m_fBooksRequired;      // Do spells require books to be casted?
 	int  m_iWordsOfPowerColor;  // Color used for Words Of Power.
 	int  m_iWordsOfPowerFont;   // Font used for Words Of Power.
 	bool m_fWordsOfPowerPlayer; // Words of Power for players.

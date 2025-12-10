@@ -2361,7 +2361,7 @@ bool CChar::Spell_CanCast( SPELL_TYPE &spellRef, bool fTest, CObjBase * pSrc, bo
 	if ( !Skill_CanUse(skill) )
 		return false;
 
-	bool fCheckBook = true;
+	bool fCheckBook = g_Cfg.m_fBooksRequired;
 	ushort uiManaUse = g_Cfg.Calc_SpellManaCost(this, pSpellDef, pSrc);
 	ushort uiTithingUse = g_Cfg.Calc_SpellTithingCost(this, pSpellDef, pSrc);
 

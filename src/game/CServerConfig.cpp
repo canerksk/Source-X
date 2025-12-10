@@ -76,6 +76,7 @@ CServerConfig::CServerConfig()
 	m_fReagentLossAbort		= false;
 	m_fReagentLossFail		= false;
     m_fReagentsRequired		= false;
+    m_fBooksRequired		= true;
 	m_iWordsOfPowerColor	= HUE_TEXT_DEF;
 	m_iWordsOfPowerFont		= FONT_NORMAL;
 	m_fWordsOfPowerPlayer	= true;
@@ -485,6 +486,7 @@ enum RC_TYPE
 	RC_BACKUPLEVELS,			// m_iSaveBackupLevels
 	RC_BANKMAXITEMS,
 	RC_BANKMAXWEIGHT,
+    RC_BOOKSREQUIRED,
 	RC_BUILD,
     RC_BUILDBRANCH,
     RC_BUILDNUM,
@@ -780,6 +782,7 @@ const CAssocReg CServerConfig::sm_szLoadKeys[RC_QTY + 1]
     { "BACKUPLEVELS",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iSaveBackupLevels)	}},
     { "BANKMAXITEMS",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iBankIMax)			}},
     { "BANKMAXWEIGHT",			{ ELEM_INT,		static_cast<uint>OFFSETOF(CServerConfig,m_iBankWMax)			}},
+    { "BOOKSREQUIRED",          { ELEM_BOOL,    static_cast<uint>OFFSETOF(CServerConfig,m_fBooksRequired)       }},
     { "BUILD",					{ ELEM_VOID,	0																}},
     { "BUILDBRANCH",			{ ELEM_VOID,	0																}},
     { "BUILDNUM",				{ ELEM_VOID,	0																}},
