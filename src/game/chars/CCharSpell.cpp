@@ -2361,6 +2361,7 @@ bool CChar::Spell_CanCast( SPELL_TYPE &spellRef, bool fTest, CObjBase * pSrc, bo
 	if ( !Skill_CanUse(skill) )
 		return false;
 
+	bool fCheckBook = true;
 	ushort uiManaUse = g_Cfg.Calc_SpellManaCost(this, pSpellDef, pSrc);
 	ushort uiTithingUse = g_Cfg.Calc_SpellTithingCost(this, pSpellDef, pSrc);
 
@@ -2371,6 +2372,7 @@ bool CChar::Spell_CanCast( SPELL_TYPE &spellRef, bool fTest, CObjBase * pSrc, bo
 	if ( fFailMsg )
         pScriptArgs->m_iN3 |= 0x0002;
     pScriptArgs->m_VarsLocal.SetNum("TithingUse",uiTithingUse);
+    pScriptArgs->m_VarsLocal.SetNum("CheckBook", fCheckBook);
 
 	if ( IsTrigUsed(TRIGGER_SELECT) )
 	{
@@ -2404,6 +2406,7 @@ bool CChar::Spell_CanCast( SPELL_TYPE &spellRef, bool fTest, CObjBase * pSrc, bo
 	}
     uiManaUse = (ushort)(pScriptArgs->m_iN2);
     uiTithingUse = (ushort)(pScriptArgs->m_VarsLocal.GetKeyNum("TithingUse"));
+    fCheckBook   = (bool)(pScriptArgs->m_VarsLocal.GetKeyNum("CheckBook"));
 
 	if ( !pSrc->IsChar() )// Looking for non-character sources
 	{
@@ -2471,20 +2474,23 @@ bool CChar::Spell_CanCast( SPELL_TYPE &spellRef, bool fTest, CObjBase * pSrc, bo
 			}
 
 			// check the spellbook for it.
-			CItem * pBook = GetSpellbook( spellRef );
-			if ( pBook == nullptr )
-			{
-				if ( fFailMsg )
-					SysMessageDefault( DEFMSG_SPELL_TRY_NOBOOK );
-				return false;
-			}
+            if (fCheckBook)
+            {
+                CItem *pBook = GetSpellbook(spellRef);
+                if (pBook == nullptr)
+                {
+                    if (fFailMsg)
+                        SysMessageDefault(DEFMSG_SPELL_TRY_NOBOOK);
+                    return false;
+                }
 
-			if ( ! pBook->IsSpellInBook( spellRef ))
-			{
-				if ( fFailMsg )
-					SysMessageDefault( DEFMSG_SPELL_TRY_NOTYOURBOOK );
-				return false;
-			}
+                if (!pBook->IsSpellInBook(spellRef))
+                {
+                    if (fFailMsg)
+                        SysMessageDefault(DEFMSG_SPELL_TRY_NOTYOURBOOK);
+                    return false;
+                }
+            }
 
 			// check for reagents
 			const size_t iMissingReagents = g_Cfg.Calc_SpellReagentsConsume(this, pSpellDef, pSrc, fTest);
