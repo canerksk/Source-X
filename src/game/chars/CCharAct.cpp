@@ -694,6 +694,13 @@ void CChar::SysMessage( lpctstr pMsg ) const	// Push a message back to the clien
 	GetClientActive()->SysMessage( pMsg );
 }
 
+void CChar::SysMessageCliloc( int iClilocId ) const
+{
+	if ( ! IsClientActive())
+		return;
+	GetClientActive()->SysMessageCliloc( iClilocId );
+}
+
 // Push status change to all who can see us.
 // For Weight, AC, Gold must update all
 // Just flag the stats to be updated later if possible.

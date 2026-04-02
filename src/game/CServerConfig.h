@@ -1138,7 +1138,12 @@ public:
     */
     bool Calc_CurePoisonChance(const CItem* pPoison, int iCureLevel, bool fIsGm = false );
 
-#define SysMessageDefault( msg )	SysMessage( g_Cfg.GetDefaultMsg( msg ) )
+#define SysMessageDefault( msg ) \
+    do { \
+        int _clilocId = g_Cfg.GetDefaultMsgCliloc(msg); \
+        if (_clilocId > 0) SysMessageCliloc(_clilocId); \
+        else SysMessage(g_Cfg.GetDefaultMsg(msg)); \
+    } while(0)
 
     /**
      * @brief   Gets default message (sphere_msgs.scp).
@@ -1157,6 +1162,15 @@ public:
     * @return  The default message.
     */
 	lpctstr	GetDefaultMsg(int lKeyNum);
+
+    /**
+    * @brief   Gets cliloc ID for a default message, if one was configured in sphere_msgs.scp.
+    *
+    * @param   lKeyNum  The key.
+    *
+    * @return  The cliloc ID, or 0 if none was set.
+    */
+	int GetDefaultMsgCliloc(int lKeyNum);
 
 typedef std::map<dword,dword> KRGumpsMap;
 	KRGumpsMap m_mapKRGumps;

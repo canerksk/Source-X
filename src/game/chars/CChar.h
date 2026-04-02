@@ -551,6 +551,7 @@ public:
 public:
 	void ObjMessage( lpctstr pMsg, const CObjBase * pSrc ) const;
 	virtual void SysMessage( lpctstr pMsg ) const override;
+	virtual void SysMessageCliloc( int iClilocId ) const override;
 
 	void UpdateStatsFlag() const;
 	void UpdateStatVal( STAT_TYPE type, int iChange = 0, ushort uiLimit = 0 );

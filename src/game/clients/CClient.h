@@ -497,6 +497,7 @@ public:
 	void addBarkLocalizedEx( int iClilocId, const CObjBaseTemplate * pSrc, HUE_TYPE wHue = HUE_DEFAULT, TALKMODE_TYPE mode = TALKMODE_SAY, FONT_TYPE font = FONT_BOLD, AFFIX_TYPE affix = AFFIX_APPEND, lpctstr pAffix = nullptr, lpctstr pArgs = nullptr ) const;
 	void addBarkParse( lpctstr pszText, const CObjBaseTemplate * pSrc, HUE_TYPE wHue, TALKMODE_TYPE mode, FONT_TYPE font = FONT_NORMAL, bool bUnicode = false, lpctstr name = "" ) const;
 	void addSysMessage( lpctstr pMsg ); // System message (In lower left corner)
+	void addSysMessageCliloc( int iClilocId ); // Localized system message via cliloc ID
 	void addObjMessage( lpctstr pMsg, const CObjBaseTemplate * pSrc, HUE_TYPE wHue = HUE_TEXT_DEF, TALKMODE_TYPE mode = TALKMODE_SAY ); // The message when an item is clicked
 
     void addCodexOfWisdom(dword dwTopicID, bool fForceOpen = false);
@@ -815,6 +816,7 @@ public:
     }
 
 	virtual void SysMessage( lpctstr pMsg ) const override; // System message (In lower left corner)
+	virtual void SysMessageCliloc( int iClilocId ) const override; // Localized system message via cliloc ID
 	bool CanSee( const CObjBaseTemplate * pObj ) const;
 	bool CanHear( const CObjBaseTemplate * pSrc, TALKMODE_TYPE mode ) const;
 

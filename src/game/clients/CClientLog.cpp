@@ -193,6 +193,17 @@ void CClient::addSysMessage(lpctstr pszMsg) // System message (In lower left cor
 }
 
 
+void CClient::addSysMessageCliloc(int iClilocId)
+{
+	ADDTOCALLSTACK("CClient::addSysMessageCliloc");
+	addBarkLocalized(iClilocId, nullptr, HUE_TEXT_DEF, TALKMODE_SAY, FONT_BOLD, "");
+}
+
+void CClient::SysMessageCliloc(int iClilocId) const
+{
+	const_cast<CClient*>(this)->addSysMessageCliloc(iClilocId);
+}
+
 void CClient::addWebLaunch( lpctstr pPage )
 {
 	ADDTOCALLSTACK("CClient::addWebLaunch");

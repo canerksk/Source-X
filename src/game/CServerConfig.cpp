@@ -3424,7 +3424,45 @@ bool CServerConfig::LoadResourceSection( CScript * pScript, bool fInsertSorted )
 				{
                     if ( !strcmpi(ptcKey, gread->sm_szDefMsgNames[l]) )
 					{
-                        Str_CopyLimitNull(gread->sm_szDefMessages[l], pScript->GetArgStr(), sizeof(CExprGlobals::sm_szDefMessages[l]));
+                        // Parse "message text", cliloc_id  (cliloc is optional)
+                        const tchar * pRaw = pScript->GetArgRaw();
+                        int iClilocId = 0;
+                        if (*pRaw == '"')
+                        {
+                            // Quoted string: find closing quote searching from end
+                            const tchar * pStart = pRaw + 1;
+                            const tchar * pClose = nullptr;
+                            for (const tchar * p = pStart + strlen(pStart) - 1; p >= pStart; --p)
+                            {
+                                if (*p == '"') { pClose = p; break; }
+                            }
+                            if (pClose)
+                            {
+                                size_t uLen = (size_t)(pClose - pStart);
+                                size_t uCopy = (uLen < CExprGlobals::m_kiDefmsgMaxLen - 1) ? uLen : CExprGlobals::m_kiDefmsgMaxLen - 1;
+                                strncpy(gread->sm_szDefMessages[l], pStart, uCopy);
+                                gread->sm_szDefMessages[l][uCopy] = '\0';
+                                // Look for optional cliloc ID after closing quote: ", <number>"
+                                const tchar * pAfter = pClose + 1;
+                                while (*pAfter == ' ' || *pAfter == '\t') ++pAfter;
+                                if (*pAfter == ',')
+                                {
+                                    ++pAfter;
+                                    while (*pAfter == ' ' || *pAfter == '\t') ++pAfter;
+                                    if (*pAfter >= '0' && *pAfter <= '9')
+                                        iClilocId = (int)strtol(pAfter, nullptr, 10);
+                                }
+                            }
+                            else
+                            {
+                                Str_CopyLimitNull(gread->sm_szDefMessages[l], pStart, sizeof(CExprGlobals::sm_szDefMessages[l]));
+                            }
+                        }
+                        else
+                        {
+                            Str_CopyLimitNull(gread->sm_szDefMessages[l], pRaw, sizeof(CExprGlobals::sm_szDefMessages[l]));
+                        }
+                        gread->sm_iDefMsgClilocs[l] = iClilocId;
 						break;
 					}
 				}
@@ -5305,6 +5343,14 @@ lpctstr CServerConfig::GetDefaultMsg(lpctstr ptcKey)
 #else
     return Str_mtEngineGetSafeTemp(CExprGlobals::sm_szDefMessages[i]);
 #endif
+}
+
+int CServerConfig::GetDefaultMsgCliloc(int lKeyNum)
+{
+    ADDTOCALLSTACK("CServerConfig::GetDefaultMsgCliloc");
+    if ((lKeyNum < 0) || (lKeyNum >= DEFMSG_QTY))
+        return 0;
+    return CExprGlobals::sm_iDefMsgClilocs[lKeyNum];
 }
 
 bool CServerConfig::GenerateDefname(tchar *pObjectName, size_t iInputLength, lpctstr pPrefix, TemporaryString *pOutput, bool bCheckConflict, CVarDefMap* vDefnames)

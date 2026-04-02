@@ -24,6 +24,8 @@ lpctstr const CExprGlobals::sm_szDefMsgNames[DEFMSG_QTY] =
 	#include "../tables/defmessages.tbl"
 };
 
+int CExprGlobals::sm_iDefMsgClilocs[DEFMSG_QTY] = {};
+
 CExprGlobals::CExprGlobals()
 {
     m_VarResDefs.   Reserve(0x1000);

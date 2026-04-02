@@ -160,6 +160,7 @@ private:
     static constexpr ushort m_kiDefmsgMaxLen = 128;
     static tchar sm_szDefMessages[DEFMSG_QTY][m_kiDefmsgMaxLen];    // like: "You put %s to %s"
     static lpctstr const sm_szDefMsgNames[DEFMSG_QTY];              // like: "put_it"
+    static int sm_iDefMsgClilocs[DEFMSG_QTY];                       // cliloc ID override, 0 if not set
 
     static constexpr ushort m_kiSkillTitlesQty = 12;
     std::array<CValStr, m_kiSkillTitlesQty> m_SkillTitles_Ninjitsu;
