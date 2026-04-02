@@ -1138,13 +1138,6 @@ public:
     */
     bool Calc_CurePoisonChance(const CItem* pPoison, int iCureLevel, bool fIsGm = false );
 
-#define SysMessageDefault( msg ) \
-    do { \
-        int _clilocId = g_Cfg.GetDefaultMsgCliloc(msg); \
-        if (_clilocId > 0) SysMessageCliloc(_clilocId); \
-        else SysMessage(g_Cfg.GetDefaultMsg(msg)); \
-    } while(0)
-
     /**
      * @brief   Gets default message (sphere_msgs.scp).
      *

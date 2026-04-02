@@ -41,7 +41,8 @@ public:
     virtual const CChar * GetChar() const;
 
 	virtual void SysMessage( lpctstr pszMessage ) const = 0;	// Feed back message.
-	virtual void SysMessageCliloc( int iClilocId ) const {}	// Feed back localized message (cliloc). Default: no-op for non-game consoles.
+	virtual void SysMessageCliloc( int iClilocId ) const;		// Feed back localized message (cliloc). Default: no-op for non-game consoles.
+	void SysMessageDefault( int iDefMsgKey ) const;				// Send defmessage: uses cliloc if configured, otherwise text.
 	void VSysMessage( lpctstr pszFormat, va_list args ) const;
     void SysMessagef( lpctstr pszFormat, ... ) const SPHERE_PRINTFARGS(2,3);
 

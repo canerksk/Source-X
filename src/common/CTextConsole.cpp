@@ -137,6 +137,20 @@ int CTextConsole::OnConsoleKey( CSString & sText, tchar nChar, bool fEcho )
     return 1;
 }
 
+void CTextConsole::SysMessageCliloc( int /*iClilocId*/ ) const
+{
+    // Default: no-op for non-game consoles (CServer, file console, etc.)
+}
+
+void CTextConsole::SysMessageDefault( int iDefMsgKey ) const
+{
+    int iClilocId = g_Cfg.GetDefaultMsgCliloc(iDefMsgKey);
+    if (iClilocId > 0)
+        SysMessageCliloc(iClilocId);
+    else
+        SysMessage(g_Cfg.GetDefaultMsg(iDefMsgKey));
+}
+
 void CTextConsole::VSysMessage( lpctstr pszFormat, va_list args ) const
 {
     TemporaryString tsTemp;
