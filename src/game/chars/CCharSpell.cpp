@@ -2341,6 +2341,9 @@ void CChar::Spell_Field(CPointMap pntTarg, ITEMID_TYPE idEW, ITEMID_TYPE idNS, u
             if (iDuration <= 0)
                 iDuration = GetSpellDuration( m_atMagery.m_iSpell, iSkillLevel, pCharSrc );
 
+		    // We use another variable, because we cannot increase iDuration, since it would increase for the next object as well.
+		    int64 iObjectDuration = iDuration;
+
 			CItem * pSpell = CItem::CreateBase( id );
 			ASSERT(pSpell);
 			pSpell->m_itSpell.m_spell = (word)(m_atMagery.m_iSpell);
@@ -2352,10 +2355,13 @@ void CChar::Spell_Field(CPointMap pntTarg, ITEMID_TYPE idEW, ITEMID_TYPE idNS, u
 			pSpell->SetHue(iColor);
 			pSpell->GenerateScript(this);
 
-            if (pSpellDef->IsSpellType(SPELLFLAG_FIELD_RANDOMDECAY)) // If the spell has ASYNC flag, the timers should be randomized.
-                iDuration += g_Rand.GetLLVal(iDuration / 2);
+		    // If the spell has ASYNC flag, the timers should be randomized.
+            if (pSpellDef->IsSpellType(SPELLFLAG_FIELD_RANDOMDECAY))
+            {
+                iObjectDuration += g_Rand.GetLLVal(iDuration / 2);
+            }
 
-			pSpell->MoveToDecay( ptg, iDuration * MSECS_PER_TENTH, true);
+			pSpell->MoveToDecay( ptg, iObjectDuration * MSECS_PER_TENTH, true);
 		}
 	}
 }
