@@ -4139,4 +4139,5 @@ When setting a property like MORE to the a spell or skill defname, trying to rea
 - Added: templates can now be used when carving corpses (#1574).
 
 19-05-2026, nightNR
-- Fixed: (#1550).
+- Fixed: pre-AOS armor rating (AR) calculation (#1550).
+- Fixed NPCs can't cast spells from spellbook after respawn (#1551).
